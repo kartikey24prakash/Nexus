@@ -1,0 +1,73 @@
+src/
+├── api/
+│   └── axios.js                          ✅ done
+├── app/
+│   ├── App.jsx                           ✅ done
+│   ├── App.routes.jsx                    ✅ done
+│   └── app.store.js                      ✅ done
+├── styles/
+│   ├── global.css                        ✅ done
+│   ├── auth.css
+│   ├── feed.css
+│   ├── search.css
+│   ├── graph.css
+│   ├── collections.css
+│   ├── resurface.css
+│   └── navbar.css
+├── features/
+│   ├── auth/
+│   │   ├── components/
+│   │   │   └── AuthLayout.jsx
+│   │   ├── hook/
+│   │   │   └── useAuth.js
+│   │   ├── pages/
+│   │   │   ├── LoginPage.jsx
+│   │   │   └── RegisterPage.jsx
+│   │   └── service/
+│   │       ├── auth.api.js
+│   │       └── auth.slice.js
+│   ├── items/
+│   │   ├── components/
+│   │   │   ├── ItemCard.jsx
+│   │   │   └── SaveBar.jsx
+│   │   ├── hook/
+│   │   │   └── useItems.js
+│   │   ├── pages/
+│   │   │   ├── FeedPage.jsx
+│   │   │   └── ItemDetailPage.jsx
+│   │   └── service/
+│   │       ├── items.api.js
+│   │       └── items.slice.js
+│   ├── search/
+│   │   ├── components/
+│   │   │   └── SearchResult.jsx
+│   │   ├── pages/
+│   │   │   └── SearchPage.jsx
+│   │   └── service/
+│   │       ├── search.api.js
+│   │       └── search.slice.js
+│   ├── graph/
+│   │   ├── components/
+│   │   │   └── GraphCanvas.jsx
+│   │   ├── pages/
+│   │   │   └── GraphPage.jsx
+│   │   └── service/
+│   │       ├── graph.api.js
+│   │       └── graph.slice.js
+│   ├── collections/
+│   │   ├── components/
+│   │   │   └── CollectionCard.jsx
+│   │   ├── pages/
+│   │   │   └── CollectionsPage.jsx
+│   │   └── service/
+│   │       ├── collections.api.js
+│   │       └── collections.slice.js
+│   └── resurface/
+│       ├── components/
+│       │   └── ResurfaceCard.jsx
+│       └── service/
+│           ├── resurface.api.js
+│           └── resurface.slice.js
+├── components/
+│   └── Navbar.jsx
+└── main.jsx                              ✅ done
