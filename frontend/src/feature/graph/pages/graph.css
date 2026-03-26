@@ -1,0 +1,94 @@
+.graph-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #0F0F0F;
+    color: #EEEEEE;
+}
+
+.graph-topbar {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.5px solid #1e1e1e;
+}
+
+.graph-logo {
+    font-size: 18px;
+    font-weight: 600;
+    color: #F97316;
+}
+
+.graph-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #555;
+}
+
+.graph-canvas {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.graph-loading,
+.graph-empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #555;
+    font-size: 14px;
+    text-align: center;
+    max-width: 200px;
+    line-height: 1.6;
+}
+
+.graph-legend {
+    display: flex;
+    gap: 16px;
+    padding: 10px 20px;
+    border-top: 0.5px solid #1e1e1e;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #555;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.bottom-nav {
+    background: #0F0F0F;
+    border-top: 0.5px solid #1e1e1e;
+    display: flex;
+    padding: 8px 0 12px;
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 0;
+    cursor: pointer;
+}
+
+.nav-label {
+    font-size: 10px;
+    color: #444;
+    font-weight: 500;
+}
+
+.nav-label.active { color: #F97316; }

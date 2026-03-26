@@ -22,31 +22,69 @@ const getEmbeddingModel = () => new GoogleGenerativeAIEmbeddings({
 // takes title + content, returns array of 3-5 tags
 export const generateTags = async (title, content) => {
   try {
-    const chatModel = getChatModel()
+    const chatModel = getChatModel();
+
     const text = `Title: ${title}\n\nContent: ${content.slice(0, 2000)}`;
 
     const response = await chatModel.invoke([
-      new SystemMessage(
-        `You are a tagging assistant. Given a piece of content, return ONLY a JSON array of 3 to 5 short lowercase tags that best describe the topic. 
-        No explanation. No markdown. Only the JSON array.
-        Example output: ["machine learning", "python", "neural networks"]`
-      ),
+      new SystemMessage(`
+You are an intelligent tagging system.
+
+Generate 5 to 8 high-quality tags for the given content.
+
+Rules:
+- lowercase only
+- each tag = 1 to 3 words
+- mix of topic + concept + context
+- avoid duplicates or similar wording
+- no symbols, no punctuation
+- return ONLY a JSON array
+Example:
+["ai", "machine learning", "neural networks", "tutorial"]
+      `),
       new HumanMessage(text),
     ]);
 
-    const raw = response.content.trim();
+    const raw = response.content?.toString().trim() || "";
 
-    // strip markdown code fences if Gemini adds them
-    const cleaned = raw.replace(/```json|```/g, "").trim();
+    // clean markdown / junk
+    const cleaned = raw
+      .replace(/```json|```/g, "")
+      .replace(/[\n\r]/g, "")
+      .trim();
 
-    const tags = JSON.parse(cleaned);
+    let tags = [];
 
-    // make sure it's an array of strings
+    try {
+      tags = JSON.parse(cleaned);
+    } catch {
+      // fallback: extract words manually if JSON breaks
+      tags = cleaned
+        .replace(/[\[\]"]/g, "")
+        .split(",")
+        .map(t => t.trim());
+    }
+
     if (!Array.isArray(tags)) return [];
-    return tags.map((t) => t.toLowerCase().trim()).slice(0, 5);
+
+    // normalize + dedupe
+    const normalized = tags
+      .map(t =>
+        t
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\s]/g, "")
+          .replace(/\s+/g, " ")
+      )
+      .filter(Boolean);
+
+    const unique = [...new Set(normalized)];
+
+    return unique.slice(0, 8);
+
   } catch (error) {
     console.error("[AI] Tag generation failed:", error.message);
-    return []; // fail silently — item still saves without tags
+    return [];
   }
 };
 

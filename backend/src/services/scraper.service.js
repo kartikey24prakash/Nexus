@@ -97,6 +97,7 @@ const scrapeImage = async (url) => {
 
 // ─── PDF scraper ──────────────────────────────────────────────────────────────
 export const scrapePdf = async (fileBuffer) => {
+  console.log("pdfParse type:", typeof pdfParse)
   const data = await pdfParse(fileBuffer);
 
   const title = "PDF Document";

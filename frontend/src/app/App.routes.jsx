@@ -8,6 +8,7 @@ import Search from "../feature/search/pages/Search"
 import Collections from "../feature/collections/pages/Collections"
 import CollectionDetail from "../feature/collections/pages/Collectiondetail "
 import ItemDetail from '../feature/dashboard/pages/ItemDetail'
+import Graph from "../feature/graph/pages/Graph"
 
 
 
@@ -50,6 +51,12 @@ export const router = createBrowserRouter([
         path:'/item/:id',
         element:<Protected>
             <ItemDetail></ItemDetail>
+        </Protected>
+    },
+    {
+        path:'/graph',
+        element:<Protected>
+            <Graph></Graph>
         </Protected>
     }
 ])

@@ -4,7 +4,7 @@ import itemsReducer from '../feature/dashboard/services/item.slice'
 import resurfaceReducer from '../feature/resurface/services/resurface.slice'
 import searchReducer from '../feature/search/services/search.slice'
 import collectionsReducer from '../feature/collections/services/collections.slice'
-
+import graphReducer from '../feature/graph/services/graph.slice'
 
 
 export const store = configureStore({
@@ -13,6 +13,7 @@ export const store = configureStore({
         items: itemsReducer,
         resurface:resurfaceReducer,
         search:searchReducer,
-        collections:collectionsReducer
+        collections:collectionsReducer,
+        graph:graphReducer
     }
 })

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Nexus</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, sans-serif; }
+
+        body {
+            width: 300px;
+            background: #0F0F0F;
+            color: #EEEEEE;
+        }
+
+        .header {
+            padding: 16px;
+            border-bottom: 0.5px solid #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo { font-size: 18px; font-weight: 600; color: #F97316; }
+
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: #555;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .logout-btn:hover { color: #EF4444; }
+
+        /* ── Login screen ── */
+        .login-screen {
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .screen-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #EEEEEE;
+            margin-bottom: 4px;
+        }
+
+        .screen-sub {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        input {
+            width: 100%;
+            background: #1A1A1A;
+            border: 0.5px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 13px;
+            color: #EEEEEE;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        input:focus { border-color: #F97316; }
+        input::placeholder { color: #555; }
+
+        .btn-primary {
+            width: 100%;
+            background: #F97316;
+            color: #0F0F0F;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .btn-primary:hover { opacity: 0.88; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ── Save screen ── */
+        .save-screen {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .url-preview {
+            background: #1A1A1A;
+            border: 0.5px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 11px;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .page-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #EEEEEE;
+            line-height: 1.4;
+        }
+
+        .tags-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            min-height: 24px;
+        }
+
+        .tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #F9731620;
+            color: #F97316;
+            border: 0.5px solid #F9731640;
+        }
+
+        /* ── Success state ── */
+        .success-card {
+            background: #10B98120;
+            border: 0.5px solid #10B981;
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #10B981;
+            font-weight: 500;
+        }
+
+        /* ── Error ── */
+        .error-msg {
+            background: #EF444420;
+            border: 0.5px solid #EF4444;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #EF4444;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="logo">Nexus</span>
+        <button class="logout-btn hidden" id="logout-btn">Logout</button>
+    </div>
+
+    <!-- Login screen -->
+    <div class="login-screen" id="login-screen">
+        <div class="screen-title">Sign in to Nexus</div>
+        <div class="screen-sub">Save this page to your knowledge base</div>
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <div class="error-msg hidden" id="login-error"></div>
+        <button class="btn-primary" id="login-btn">Sign in</button>
+    </div>
+
+    <!-- Save screen -->
+    <div class="save-screen hidden" id="save-screen">
+        <div class="url-preview" id="url-preview"></div>
+        <div class="page-title" id="page-title">Loading...</div>
+        <div class="tags-row" id="tags-row"></div>
+        <div class="error-msg hidden" id="save-error"></div>
+        <div class="success-card hidden" id="success-card">✓ Saved to Nexus</div>
+        <button class="btn-primary" id="save-btn">Save to Nexus</button>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

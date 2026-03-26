@@ -27,7 +27,7 @@ app.use(
     origin: [
       "http://localhost:5173",     // Vite React dev server
       "http://localhost:3000",
-      "chrome-extension://*",      // Browser extension
+      "chrome-extension://flhhajpghloejheffojcemcnimbdbfii",      // Browser extension
     ],
     credentials: true,
   })
