@@ -1,68 +1,188 @@
 import React, { useState } from 'react'
-import './login.css'
-import { Link } from 'react-router'
+import { Link, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useAuth } from '../hook/useAuth'
-import { Navigate } from 'react-router'
+import NexusBackground from '../components/Background3D'
+import './nexus-auth.css'
 
 export default function Register() {
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+  const [name, setName]         = useState('')
+  const [email, setEmail]       = useState('')
+  const [password, setPassword] = useState('')
+  const [strength, setStrength] = useState(0)
 
-    const user = useSelector(state => state.auth.user)
-    const loading = useSelector(state => state.auth.loading)
+  const user    = useSelector(state => state.auth.user)
+  const loading = useSelector(state => state.auth.loading)
+  const { handleRegister } = useAuth()
 
-    const { handleRegister } = useAuth()
+  const handleSubmit = async e => {
+    e.preventDefault()
+    await handleRegister({ name, email, password })
+  }
 
-    const handleSubmit = async e => {
-        e.preventDefault()
-        await handleRegister({ name, email, password })
-    }
+  const handlePasswordChange = val => {
+    setPassword(val)
+    let s = 0
+    if (val.length >= 2) s = 1
+    if (val.length >= 4) s = 2
+    if (val.length >= 6) s = 3
+    if (val.length >= 9 && /[A-Z]/.test(val) && /[0-9]/.test(val)) s = 4
+    setStrength(s)
+  }
 
-    if (!loading && user) return <Navigate to="/" replace />
+  const segClass = i => (i >= strength ? 'sseg' : `sseg s${Math.min(strength, 4)}`)
 
-    return (
-        <div className="login-container">
-            <div className="login-card">
-                <h2 className="login-title">Create Account</h2>
-                <p className="login-subtitle">Start building your second brain</p>
+  if (!loading && user) return <Navigate to="/" replace />
 
-                <form onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        className="login-input"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        className="login-input"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password (min 6 characters)"
-                        className="login-input"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        minLength={6}
-                        required
-                    />
-                    <button type="submit" className="login-button">
-                        {loading ? 'Creating...' : 'Create Account'}
-                    </button>
-                </form>
+  return (
+    <div className="nx-root">
+      <NexusBackground />
+      <div className="nx-vignette" />
 
-                <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '14px', color: '#666' }}>
-                    Already have an account? <Link to="/login" style={{ color: '#2563eb' }}>Login</Link>
-                </p>
+      <div className="nx-page">
+
+        {/* ── LEFT ── */}
+        <div className="nx-left">
+          <NexusLogo />
+          <div className="nl-body">
+            <div className="nl-tag">// Your knowledge operating system</div>
+            <h1 className="nl-h1">
+              One place for<br />everything you<br /><em>discover</em>
+            </h1>
+            <p className="nl-desc">
+              Nexus captures knowledge from any source — websites, videos, PDFs,
+              photos, articles — and connects it into a searchable, intelligent second brain.
+            </p>
+            <SourceGrid />
+            <div className="ext-pill">
+              <div className="ext-dot" />
+              <div className="ext-txt">
+                <b>Nexus Browser Extension</b> — Save any page while browsing.
+                One click, always searchable in your brain.
+              </div>
             </div>
+          </div>
+          {/* stats intentionally removed */}
         </div>
-    )
+
+        {/* ── RIGHT ── */}
+        <div className="nx-right">
+          <div className="auth-box">
+            <div className="corner-tr" />
+            <div className="corner-bl" />
+            <div className="auth-inner">
+              <div className="tab-row">
+                <Link to="/login" className="atab">Sign in</Link>
+                <div className="atab atab--on">Create account</div>
+              </div>
+
+              <form onSubmit={handleSubmit}>
+                <div className="f-eyebrow">// NEW ACCOUNT</div>
+                <div className="f-title">Join Nexus</div>
+                <div className="f-sub">Your second brain starts here</div>
+
+                <div className="fgrp">
+                  <div className="flbl">Full Name</div>
+                  <input
+                    className="finput" type="text" placeholder="Your name"
+                    value={name} onChange={e => setName(e.target.value)} required
+                  />
+                </div>
+                <div className="fgrp">
+                  <div className="flbl">Email</div>
+                  <input
+                    className="finput" type="email" placeholder="you@example.com"
+                    value={email} onChange={e => setEmail(e.target.value)} required
+                  />
+                </div>
+                <div className="fgrp">
+                  <div className="flbl">Password</div>
+                  <input
+                    className="finput" type="password" placeholder="Min. 6 characters"
+                    value={password}
+                    onChange={e => handlePasswordChange(e.target.value)}
+                    minLength={6} required
+                  />
+                  <div className="sbar">
+                    {[1, 2, 3, 4].map(i => <div key={i} className={segClass(i)} />)}
+                  </div>
+                </div>
+
+                <button className="btn-nx" type="submit" style={{ marginTop: '14px' }} disabled={loading}>
+                  {loading ? 'Creating...' : 'Create free account'}
+                </button>
+              </form>
+
+              <div className="div-row">
+                <div className="dline" /><div className="dtxt">or</div><div className="dline" />
+              </div>
+              <div className="soc-row">
+                <div className="soc-btn">Google</div>
+                <div className="soc-btn">GitHub</div>
+              </div>
+              <div className="fnote">
+                Have an account? <Link to="/login">Sign in</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
 }
+
+/* ── Sub-components ─────────────────────────────────────────────────────────── */
+
+function NexusLogo() {
+  return (
+    <div className="nlogo">
+      <div className="nlogo-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <circle cx="9" cy="9" r="3" stroke="#ff7030" strokeWidth="1.4"/>
+          <line x1="9" y1="1.5" x2="9" y2="5"      stroke="#ff7030" strokeWidth="1.4" strokeLinecap="round"/>
+          <line x1="9" y1="13"  x2="9" y2="16.5"    stroke="#ff7030" strokeWidth="1.4" strokeLinecap="round"/>
+          <line x1="1.5" y1="9" x2="5"   y2="9"     stroke="#ff7030" strokeWidth="1.4" strokeLinecap="round"/>
+          <line x1="13"  y1="9" x2="16.5" y2="9"    stroke="#ff7030" strokeWidth="1.4" strokeLinecap="round"/>
+          <line x1="3.5" y1="3.5" x2="6"    y2="6"    stroke="rgba(255,120,50,0.5)" strokeWidth="1.1" strokeLinecap="round"/>
+          <line x1="12"  y1="12"  x2="14.5" y2="14.5" stroke="rgba(255,120,50,0.5)" strokeWidth="1.1" strokeLinecap="round"/>
+          <line x1="14.5" y1="3.5" x2="12"  y2="6"    stroke="rgba(255,120,50,0.5)" strokeWidth="1.1" strokeLinecap="round"/>
+          <line x1="6"    y1="12"  x2="3.5"  y2="14.5" stroke="rgba(255,120,50,0.5)" strokeWidth="1.1" strokeLinecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div className="nlogo-name">NEXUS</div>
+        <div className="nlogo-sub">SECOND BRAIN</div>
+      </div>
+    </div>
+  )
+}
+
+function SourceGrid() {
+  return (
+    <div className="src-grid">
+      {SOURCE_ITEMS.map((s, i) => (
+        <div className={`src-card${s.extBorder ? ' src-card--ext' : ''}`} key={i}>
+          <div className={`src-icon ${s.cls}`}>{s.icon}</div>
+          <div className="src-name">{s.name}</div>
+          <div className="src-sub">{s.sub}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const SOURCE_ITEMS = [
+  { cls: 'ic-url', name: 'Website URL', sub: 'Any link',
+    icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#ff7030" strokeWidth="1.2"/><path d="M1.5 7h11M7 1.5c-1.8 1.8-2.5 3.5-2.5 5.5s.7 3.7 2.5 5.5M7 1.5c1.8 1.8 2.5 3.5 2.5 5.5s-.7 3.7-2.5 5.5" stroke="#ff7030" strokeWidth="1.1" strokeLinecap="round"/></svg> },
+  { cls: 'ic-pdf', name: 'PDF / Docs', sub: 'Upload files',
+    icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="1" width="9" height="12" rx="1.5" stroke="#ff4444" strokeWidth="1.2"/><line x1="5" y1="4.5" x2="9" y2="4.5" stroke="#ff4444" strokeWidth="1" strokeLinecap="round"/><line x1="5" y1="7" x2="9" y2="7" stroke="#ff4444" strokeWidth="1" strokeLinecap="round"/><line x1="5" y1="9.5" x2="7.5" y2="9.5" stroke="#ff4444" strokeWidth="1" strokeLinecap="round"/></svg> },
+  { cls: 'ic-yt', name: 'YouTube', sub: 'Video + transcripts',
+    icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="2" stroke="#ff3a3a" strokeWidth="1.2"/><polygon points="5.5,5 9.5,7 5.5,9" fill="#ff3a3a"/></svg> },
+  { cls: 'ic-img', name: 'Photos', sub: 'Screenshots',
+    icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2" width="11" height="10" rx="1.8" stroke="#cc55ff" strokeWidth="1.2"/><circle cx="5" cy="5.5" r="1.3" stroke="#cc55ff" strokeWidth="1"/><path d="M1.5 9.5l3-2.5 2.5 2.5 2-2 3 3" stroke="#cc55ff" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+  { cls: 'ic-art', name: 'Articles', sub: 'Web content',
+    icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 10.5L4 3l2.5 5.5 2-3.5 3 5.5" stroke="#ffaa20" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+  { cls: 'ic-ext', name: 'Extension', sub: '1-click save', extBorder: true,
+    icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="10" height="10" rx="2" stroke="#ffcc30" strokeWidth="1.2"/><path d="M7 4.5v5M4.5 7h5" stroke="#ffcc30" strokeWidth="1.3" strokeLinecap="round"/></svg> },
+]
