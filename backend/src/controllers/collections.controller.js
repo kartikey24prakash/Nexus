@@ -74,7 +74,7 @@ export const updateCollection = async (req, res, next) => {
     const collection = await Collection.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
       { name, description, color },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!collection) {
@@ -124,7 +124,7 @@ export const addItemToCollection = async (req, res, next) => {
     const item = await Item.findOneAndUpdate(
       { _id: itemId, user: req.user._id },
       { collection: req.params.id },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!item) {
@@ -146,7 +146,7 @@ export const removeItemFromCollection = async (req, res, next) => {
     const item = await Item.findOneAndUpdate(
       { _id: itemId, user: req.user._id },
       { collection: null },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!item) {

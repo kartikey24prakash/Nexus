@@ -38,7 +38,7 @@ export const startResurfaceJob = () => {
   cron.schedule("0 * * * *", async () => {
     console.log("[Resurface Job] Running hourly check...");
     try {
-      const { default: User } = await import("../models/User.js");
+      const { default: User } = await import("../models/user.model.js");
       const users = await User.find({}).select("_id");
       for (const user of users) {
         await getResurfaceItemForUser(user._id);

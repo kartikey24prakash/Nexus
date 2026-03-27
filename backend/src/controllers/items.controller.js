@@ -1,64 +1,32 @@
 import Item from "../models/item.model.js";
-import { detectType, scrapeContent, scrapePdf } from "../services/scraper.service.js";
-import { generateTags, generateEmbedding, findRelatedItems } from "../services/ai.service.js";
+import { findRelatedItems } from "../services/ai.service.js";
+import { buildProcessedItemData } from "../services/ingest.service.js";
+import { enqueueItemIngest } from "../queues/ingest.queue.js";
 
-// ─── POST /api/items ───────────────────────────────────────────────────────────
-// save a new item — URL or PDF upload
+// save a new item - URL or PDF upload
 export const saveItem = async (req, res, next) => {
   try {
     const { url, type: manualType, collectionId } = req.body;
-    const file = req.file; // for PDF uploads via multer
+    const file = req.file;
 
     if (!url && !file) {
       return res.status(400).json({ success: false, message: "URL or file is required" });
     }
 
-    let title, content, thumbnail, type;
+    const processedItem = await buildProcessedItemData({
+      url,
+      manualType,
+      file,
+    });
 
-    if (file) {
-      if (file.mimetype.startsWith("image/")) {
-        // ── Image upload ──────────────────────────────────────────────────
-        type = "image";
-        title = file.originalname || "Image";
-        content = "";
-        thumbnail = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
-      } else {
-        // ── PDF upload ────────────────────────────────────────────────────
-        type = "pdf";
-        const result = await scrapePdf(file.buffer);
-        title = result.title;
-        content = result.content;
-        thumbnail = result.thumbnail;
-      }
-    }
-    else {
-      // ── URL save ────────────────────────────────────────────────────────────
-      type = manualType || detectType(url);
-      const result = await scrapeContent(url, type);
-      title = result.title;
-      content = result.content;
-      thumbnail = result.thumbnail;
-    }
-
-    // ── AI processing (runs in parallel for speed) ──────────────────────────
-    const embeddingText = `${title} ${content}`;
-    const [tags, embedding] = await Promise.all([
-      generateTags(title, content),
-      generateEmbedding(embeddingText),
-    ]);
-
-    // ── Save to MongoDB ──────────────────────────────────────────────────────
     const item = await Item.create({
-      url: url || `pdf-upload-${Date.now()}`,
-      type,
-      title,
-      content,
-      thumbnail,
-      tags,
-      embedding,
+      ...processedItem,
       user: req.user._id,
       collection: collectionId || null,
     });
+
+    // Keep queue handoff non-blocking so item creation behavior stays the same.
+    void enqueueItemIngest(item._id);
 
     res.status(201).json({ success: true, item });
   } catch (error) {
@@ -66,7 +34,6 @@ export const saveItem = async (req, res, next) => {
   }
 };
 
-// ─── GET /api/items ────────────────────────────────────────────────────────────
 // get all saved items for logged-in user
 export const getItems = async (req, res, next) => {
   try {
@@ -80,7 +47,7 @@ export const getItems = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))
-      .select("-embedding") // don't send embedding to frontend — large array
+      .select("-embedding")
       .populate("collection", "name color");
 
     const total = await Item.countDocuments(filter);
@@ -99,7 +66,6 @@ export const getItems = async (req, res, next) => {
   }
 };
 
-// ─── GET /api/items/:id ────────────────────────────────────────────────────────
 // get single item + related items
 export const getItemById = async (req, res, next) => {
   try {
@@ -112,8 +78,9 @@ export const getItemById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Item not found" });
     }
 
-    // find related items using embeddings
-    const allItems = await Item.find({ user: req.user._id }).select("_id title thumbnail type tags embedding");
+    const allItems = await Item.find({ user: req.user._id }).select(
+      "_id title thumbnail type tags embedding"
+    );
     const related = findRelatedItems(item.embedding, allItems, item._id);
 
     res.json({
@@ -126,7 +93,6 @@ export const getItemById = async (req, res, next) => {
   }
 };
 
-// ─── DELETE /api/items/:id ────────────────────────────────────────────────────
 export const deleteItem = async (req, res, next) => {
   try {
     const item = await Item.findOneAndDelete({
@@ -144,8 +110,6 @@ export const deleteItem = async (req, res, next) => {
   }
 };
 
-// ─── PATCH /api/items/:id/highlight ──────────────────────────────────────────
-// add a highlight to an item
 export const addHighlight = async (req, res, next) => {
   try {
     const { text, note } = req.body;
@@ -157,7 +121,7 @@ export const addHighlight = async (req, res, next) => {
     const item = await Item.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
       { $push: { highlights: { text, note: note || "" } } },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!item) {
@@ -170,14 +134,12 @@ export const addHighlight = async (req, res, next) => {
   }
 };
 
-// ─── DELETE /api/items/:id/highlight/:highlightId ─────────────────────────────
-// remove a highlight
 export const deleteHighlight = async (req, res, next) => {
   try {
     const item = await Item.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
       { $pull: { highlights: { _id: req.params.highlightId } } },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!item) {

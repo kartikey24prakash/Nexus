@@ -4,6 +4,8 @@ import {
     getCollectionById,
     createCollection,
     deleteCollection,
+    addItemToCollection,
+    removeItemFromCollection,
 } from "../services/collections.api";
 import {
     setCollections,
@@ -66,6 +68,28 @@ export function useCollections() {
         }
     }
 
+    async function handleAddItemToCollection(collectionId, itemId) {
+        try {
+            const data = await addItemToCollection(collectionId, itemId);
+            toast.success("Item added to collection");
+            return data.item;
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to add item to collection");
+            throw err;
+        }
+    }
+
+    async function handleRemoveItemFromCollection(collectionId, itemId) {
+        try {
+            const data = await removeItemFromCollection(collectionId, itemId);
+            toast.success("Item removed from collection");
+            return data.item;
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to remove item from collection");
+            throw err;
+        }
+    }
+
     return {
         collections,
         activeCollection,
@@ -75,5 +99,7 @@ export function useCollections() {
         handleGetCollectionById,
         handleCreateCollection,
         handleDeleteCollection,
+        handleAddItemToCollection,
+        handleRemoveItemFromCollection,
     }
 }

@@ -49,6 +49,29 @@ const itemSchema = new mongoose.Schema(
             type: [Number],   // vector from Gemini embedding model
             default: [],
         },
+        status: {
+            type: String,
+            enum: ["pending", "processing", "ready", "failed"],
+            default: "ready",
+        },
+        processingError: {
+            type: String,
+            default: null,
+        },
+        summary: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        chunkCount: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+        embeddedAt: {
+            type: Date,
+            default: null,
+        },
 
         // ─── Features ───────────────────────────────────────────────────────────
         highlights: {
@@ -77,6 +100,7 @@ itemSchema.index({ tags: 1 });              // fast tag-based graph queries
 itemSchema.index({ type: 1 });              // filter by content type
 itemSchema.index({ collection: 1 });        // filter by collection
 itemSchema.index({ createdAt: -1 });        // sort by newest
+itemSchema.index({ user: 1, status: 1 });   // helpful for future ingestion workflows
 
 const Item = mongoose.model("Item", itemSchema);
 

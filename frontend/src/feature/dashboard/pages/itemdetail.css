@@ -125,6 +125,83 @@
     user-select: text;
 }
 
+.item-collection-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 0.5px solid #242424;
+    border-radius: 12px;
+    background: #141414;
+}
+
+.item-collection-row {
+    display: flex;
+    gap: 10px;
+}
+
+.collection-select {
+    flex: 1;
+    background: #1D1D1D;
+    border: 0.5px solid #333;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #EEEEEE;
+    font-size: 13px;
+    outline: none;
+}
+
+.collection-select:focus { border-color: #F97316; }
+
+.collection-save-btn,
+.collection-remove-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.collection-save-btn {
+    background: #F97316;
+    color: #0F0F0F;
+}
+
+.collection-save-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.item-collection-current {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.item-collection-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.item-collection-name {
+    font-size: 13px;
+    color: #CCCCCC;
+}
+
+.collection-remove-btn {
+    background: transparent;
+    border: 0.5px solid #3A3A3A;
+    color: #AAAAAA;
+}
+
+.item-collection-empty {
+    font-size: 12px;
+    color: #666;
+}
+
 /* Highlight prompt */
 .highlight-prompt {
     background: #1A1A1A;
@@ -249,4 +326,21 @@
     font-weight: 500;
     margin-left: 10px;
     flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+    .item-detail-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .item-collection-row {
+        flex-direction: column;
+    }
+
+    .collection-save-btn,
+    .collection-remove-btn {
+        width: 100%;
+    }
 }
