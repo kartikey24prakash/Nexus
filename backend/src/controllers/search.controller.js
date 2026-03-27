@@ -1,8 +1,7 @@
 import Item from "../models/item.model.js";
 import { generateEmbedding, cosineSimilarity } from "../services/ai.service.js";
+import { searchItemChunks } from "../services/vector.service.js";
 
-// ─── POST /api/search ──────────────────────────────────────────────────────────
-// semantic search — finds items by meaning, not just keywords
 export const semanticSearch = async (req, res, next) => {
   try {
     const { query, type, collection } = req.body;
@@ -11,38 +10,87 @@ export const semanticSearch = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Search query is required" });
     }
 
-    // 1. embed the search query
+    const pineconeMatches = await searchItemChunks({
+      query,
+      userId: req.user._id,
+      type,
+      collectionId: collection,
+      topK: 12,
+    });
+
+    if (pineconeMatches.length) {
+      const itemIds = [...new Set(
+        pineconeMatches
+          .map(match => match.metadata?.itemId)
+          .filter(Boolean)
+      )];
+
+      const items = await Item.find({
+        _id: { $in: itemIds },
+        user: req.user._id,
+      })
+        .select("-embedding -chunks -sourceData")
+        .populate("collection", "name color");
+
+      const itemMap = new Map(items.map(item => [String(item._id), item]));
+      const seenItemIds = new Set();
+
+      const results = pineconeMatches
+        .map(match => {
+          const item = itemMap.get(String(match.metadata?.itemId));
+          if (!item || seenItemIds.has(String(item._id))) return null;
+
+          seenItemIds.add(String(item._id));
+
+          return {
+            ...item.toObject(),
+            relevanceScore: Math.round((match.score || 0) * 100) / 100,
+            matchedChunk: {
+              text: match.metadata?.text || "",
+              chunkIndex: match.metadata?.chunkIndex ?? null,
+            },
+          };
+        })
+        .filter(Boolean);
+
+      return res.json({
+        success: true,
+        query,
+        results,
+        total: results.length,
+        mode: "pinecone",
+      });
+    }
+
     const queryEmbedding = await generateEmbedding(query);
 
     if (!queryEmbedding.length) {
       return res.status(500).json({ success: false, message: "Failed to generate query embedding" });
     }
 
-    // 2. fetch all items for this user that have embeddings
     const filter = { user: req.user._id, embedding: { $exists: true, $ne: [] } };
     if (type) filter.type = type;
     if (collection) filter.collection = collection;
 
     const items = await Item.find(filter)
-      .select("-content")           // exclude full content — too heavy
+      .select("-content")
       .populate("collection", "name color");
 
     if (!items.length) {
       return res.json({ success: true, results: [] });
     }
 
-    // 3. compute cosine similarity for each item
     const scored = items
       .map((item) => ({
         item,
         score: cosineSimilarity(queryEmbedding, item.embedding),
       }))
-      .filter((r) => r.score > 0.3)       // threshold — only return relevant results
-      .sort((a, b) => b.score - a.score)  // highest similarity first
-      .slice(0, 10)                        // top 10 results
+      .filter((r) => r.score > 0.3)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10)
       .map(({ item, score }) => ({
         ...item.toObject(),
-        embedding: undefined,              // don't send embedding to frontend
+        embedding: undefined,
         relevanceScore: Math.round(score * 100) / 100,
       }));
 
@@ -51,14 +99,13 @@ export const semanticSearch = async (req, res, next) => {
       query,
       results: scored,
       total: scored.length,
+      mode: "fallback",
     });
   } catch (error) {
     next(error);
   }
 };
 
-// ─── GET /api/search/keyword ───────────────────────────────────────────────────
-// fallback keyword search — searches title and tags
 export const keywordSearch = async (req, res, next) => {
   try {
     const { q, type } = req.query;

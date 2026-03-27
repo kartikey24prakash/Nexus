@@ -1,6 +1,7 @@
 import Item from "../models/item.model.js";
 import { generateEmbedding, generateTags } from "./ai.service.js";
 import { detectType, scrapeContent, scrapePdf } from "./scraper.service.js";
+import { upsertItemChunks } from "./vector.service.js";
 
 async function buildUploadSourceFields(file) {
   return {
@@ -84,6 +85,39 @@ export async function buildItemAiFields({ title, content }) {
   };
 }
 
+export function buildContentChunks(text, options = {}) {
+  const normalizedText = (text || "").replace(/\s+/g, " ").trim();
+
+  if (!normalizedText) return [];
+
+  const chunkSize = options.chunkSize || 800;
+  const overlap = options.overlap || 120;
+  const chunks = [];
+
+  let start = 0;
+  let index = 0;
+
+  while (start < normalizedText.length) {
+    const end = Math.min(start + chunkSize, normalizedText.length);
+    const chunkText = normalizedText.slice(start, end).trim();
+
+    if (chunkText) {
+      chunks.push({
+        index,
+        text: chunkText,
+        charStart: start,
+        charEnd: end,
+      });
+      index += 1;
+    }
+
+    if (end >= normalizedText.length) break;
+    start = Math.max(end - overlap, start + 1);
+  }
+
+  return chunks;
+}
+
 async function extractProcessedFieldsFromItem(item) {
   if (item.sourceKind === "url") {
     if (!item.sourceUrl) {
@@ -150,9 +184,14 @@ export async function processIngestJob(itemId) {
   try {
     const processedFields = await extractProcessedFieldsFromItem(item);
     const aiFields = await buildItemAiFields(processedFields);
+    const chunks = buildContentChunks(processedFields.content);
 
-    Object.assign(item, processedFields, aiFields);
+    Object.assign(item, processedFields, aiFields, {
+      chunks,
+      chunkCount: chunks.length,
+    });
     await item.save();
+    await upsertItemChunks(item, chunks);
 
     return { success: true, itemId: String(item._id) };
   } catch (error) {

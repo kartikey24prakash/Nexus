@@ -8,6 +8,16 @@ const highlightSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+const chunkSchema = new mongoose.Schema(
+    {
+        index: { type: Number, required: true },
+        text: { type: String, required: true },
+        charStart: { type: Number, required: true },
+        charEnd: { type: Number, required: true },
+    },
+    { _id: false }
+);
+
 const itemSchema = new mongoose.Schema(
     {
         user: {
@@ -102,6 +112,11 @@ const itemSchema = new mongoose.Schema(
             type: Number,
             default: 0,
             min: 0,
+        },
+        chunks: {
+            type: [chunkSchema],
+            default: [],
+            select: false,
         },
         embeddedAt: {
             type: Date,
