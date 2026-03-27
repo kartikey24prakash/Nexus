@@ -7,9 +7,9 @@ import './graph.css'
 const TYPE_COLORS = {
     article: '#60A5FA',
     youtube: '#EF4444',
-    pdf:     '#F59E0B',
-    tweet:   '#1D9BF0',
-    image:   '#A78BFA',
+    pdf: '#F59E0B',
+    tweet: '#1D9BF0',
+    image: '#A78BFA',
 }
 
 export default function Graph() {
@@ -23,8 +23,22 @@ export default function Graph() {
 
     useEffect(() => {
         if (!nodes.length || !svgRef.current) return
-        drawGraph()
+        const cleanup = drawGraph()
+        return cleanup
     }, [nodes, edges])
+
+    const tooltip = d3.select("body").append("div")
+    .style("position", "absolute")
+    .style("background", "#1A1A1A")
+    .style("border", "0.5px solid #2a2a2a")
+    .style("border-radius", "8px")
+    .style("padding", "6px 10px")
+    .style("font-size", "12px")
+    .style("color", "#EEEEEE")
+    .style("pointer-events", "none")
+    .style("opacity", 0)
+    .style("white-space", "nowrap")
+    .style("z-index", 9999)
 
     function drawGraph() {
         const container = svgRef.current.parentElement
@@ -104,15 +118,19 @@ export default function Graph() {
             .attr('font-family', 'Inter, sans-serif')
             .text(d => d.title.length > 20 ? d.title.slice(0, 20) + '...' : d.title)
 
-        // tooltip on hover
-        node.on('mouseover', function(e, d) {
+        /// update mouseover/mouseout:
+        node.on('mouseover', function (e, d) {
             d3.select(this).select('circle:first-child')
-                .attr('fill', d => TYPE_COLORS[d.type] + '44')
                 .attr('stroke-width', 2.5)
-        }).on('mouseout', function(e, d) {
+            tooltip
+                .style("opacity", 1)
+                .html(d.title)
+                .style("left", (e.pageX + 10) + "px")
+                .style("top", (e.pageY - 10) + "px")
+        }).on('mouseout', function () {
             d3.select(this).select('circle:first-child')
-                .attr('fill', d => TYPE_COLORS[d.type] + '22')
                 .attr('stroke-width', 1.5)
+            tooltip.style("opacity", 0)
         })
 
         // tick
@@ -125,6 +143,7 @@ export default function Graph() {
 
             node.attr('transform', d => `translate(${d.x},${d.y})`)
         })
+        return () => tooltip.remove()
     }
 
     return (
@@ -162,19 +181,19 @@ export default function Graph() {
             {/* ── Bottom nav ── */}
             <div className="bottom-nav">
                 <div className="nav-item" onClick={() => navigate('/')}>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="2" fill="#333"/><rect x="11" y="2" width="7" height="7" rx="2" fill="#333"/><rect x="2" y="11" width="7" height="7" rx="2" fill="#333"/><rect x="11" y="11" width="7" height="7" rx="2" fill="#333"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="2" fill="#333" /><rect x="11" y="2" width="7" height="7" rx="2" fill="#333" /><rect x="2" y="11" width="7" height="7" rx="2" fill="#333" /><rect x="11" y="11" width="7" height="7" rx="2" fill="#333" /></svg>
                     <span className="nav-label">Feed</span>
                 </div>
                 <div className="nav-item" onClick={() => navigate('/search')}>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="#444" strokeWidth="1.5"/><path d="M14 14l4 4" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="#444" strokeWidth="1.5" /><path d="M14 14l4 4" stroke="#444" strokeWidth="1.5" strokeLinecap="round" /></svg>
                     <span className="nav-label">Search</span>
                 </div>
                 <div className="nav-item active" onClick={() => navigate('/graph')}>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="5" cy="10" r="2.5" fill="#F97316"/><circle cx="15" cy="5" r="2.5" fill="#F97316"/><circle cx="15" cy="15" r="2.5" fill="#F97316"/><path d="M7.5 9L12.5 6M7.5 11L12.5 14" stroke="#F97316" strokeWidth="1"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="5" cy="10" r="2.5" fill="#F97316" /><circle cx="15" cy="5" r="2.5" fill="#F97316" /><circle cx="15" cy="15" r="2.5" fill="#F97316" /><path d="M7.5 9L12.5 6M7.5 11L12.5 14" stroke="#F97316" strokeWidth="1" /></svg>
                     <span className="nav-label active">Graph</span>
                 </div>
                 <div className="nav-item" onClick={() => navigate('/collections')}>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="12" rx="2" stroke="#444" strokeWidth="1.5"/><path d="M7 5V4M13 5V4" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="12" rx="2" stroke="#444" strokeWidth="1.5" /><path d="M7 5V4M13 5V4" stroke="#444" strokeWidth="1.5" strokeLinecap="round" /></svg>
                     <span className="nav-label">Collections</span>
                 </div>
             </div>

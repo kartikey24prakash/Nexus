@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getItems, saveItem, deleteItem } from "../services/item.api";
+import { getItems, saveItem, deleteItem, saveFile} from "../services/item.api";
 import { setItems, addItem, removeItem, setLoading, setError, setPagination } from "../services/item.slice";
 import toast from "react-hot-toast";
 
@@ -43,6 +43,21 @@ export function useItems() {
         }
     }
 
+
+    async function handleSaveFile(file) {
+        try {
+            dispatch(setLoading(true))
+            const data = await saveFile(file)
+            dispatch(addItem(data.item))
+            toast.success('File saved to Nexus!')
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to save file')
+        } finally {
+            dispatch(setLoading(false))
+        }
+    }
+
+    
     return {
         items,
         loading,
@@ -51,5 +66,6 @@ export function useItems() {
         handleGetItems,
         handleSaveItem,
         handleDeleteItem,
+        handleSaveFile,
     };
 }

@@ -38,3 +38,12 @@ export async function deleteHighlight(id, highlightId) {
     const response = await api.delete(`/api/items/${id}/highlight/${highlightId}`)
     return response.data
 }
+
+export async function saveFile(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/api/items', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return response.data
+}

@@ -16,13 +16,22 @@ export const saveItem = async (req, res, next) => {
     let title, content, thumbnail, type;
 
     if (file) {
-      // ── PDF upload ──────────────────────────────────────────────────────────
-      type = "pdf";
-      const result = await scrapePdf(file.buffer);
-      title = result.title;
-      content = result.content;
-      thumbnail = result.thumbnail;
-    } else {
+      if (file.mimetype.startsWith("image/")) {
+        // ── Image upload ──────────────────────────────────────────────────
+        type = "image";
+        title = file.originalname || "Image";
+        content = "";
+        thumbnail = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+      } else {
+        // ── PDF upload ────────────────────────────────────────────────────
+        type = "pdf";
+        const result = await scrapePdf(file.buffer);
+        title = result.title;
+        content = result.content;
+        thumbnail = result.thumbnail;
+      }
+    }
+    else {
       // ── URL save ────────────────────────────────────────────────────────────
       type = manualType || detectType(url);
       const result = await scrapeContent(url, type);

@@ -2,8 +2,11 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import ytdl from "ytdl-core";
 import { createRequire } from "module";
+// import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+const { parsePdf } = require("./pdf.helper.cjs");
+import {getDocument} from "pdfjs-dist/legacy/build/pdf.mjs";
+
 
 // ─── Detect content type from URL ─────────────────────────────────────────────
 export const detectType = (url) => {
@@ -97,14 +100,22 @@ const scrapeImage = async (url) => {
 
 // ─── PDF scraper ──────────────────────────────────────────────────────────────
 export const scrapePdf = async (fileBuffer) => {
-  console.log("pdfParse type:", typeof pdfParse)
-  const data = await pdfParse(fileBuffer);
+    const uint8Array = new Uint8Array(fileBuffer);
+    const loadingTask = getDocument({ data: uint8Array });
+    const pdf = await loadingTask.promise;
+    
+    let text = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(" ") + " ";
+    }
 
-  const title = "PDF Document";
-  const content = data.text.replace(/\s+/g, " ").trim().slice(0, 5000);
-  const thumbnail = "";
-
-  return { title, content, thumbnail };
+    return {
+        title: "PDF Document",
+        content: text.replace(/\s+/g, " ").trim().slice(0, 5000),
+        thumbnail: "",
+    };
 };
 
 // ─── Main scraper function ────────────────────────────────────────────────────
