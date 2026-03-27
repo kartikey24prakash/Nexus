@@ -39,6 +39,41 @@ const itemSchema = new mongoose.Schema(
             type: String,     // image URL or YouTube thumbnail
             default: "",
         },
+        sourceKind: {
+            type: String,
+            enum: ["url", "upload"],
+            default: "url",
+        },
+        sourceUrl: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        sourceFileName: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        sourceMimeType: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        sourceData: {
+            type: Buffer,
+            default: null,
+            select: false,
+        },
+        sourceStoragePath: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        sourceStatus: {
+            type: String,
+            enum: ["available", "missing"],
+            default: "available",
+        },
 
         // ─── AI ─────────────────────────────────────────────────────────────────
         tags: {
@@ -101,6 +136,7 @@ itemSchema.index({ type: 1 });              // filter by content type
 itemSchema.index({ collection: 1 });        // filter by collection
 itemSchema.index({ createdAt: -1 });        // sort by newest
 itemSchema.index({ user: 1, status: 1 });   // helpful for future ingestion workflows
+itemSchema.index({ user: 1, sourceKind: 1 });
 
 const Item = mongoose.model("Item", itemSchema);
 

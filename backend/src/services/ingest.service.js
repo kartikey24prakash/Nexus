@@ -2,42 +2,66 @@ import Item from "../models/item.model.js";
 import { generateEmbedding, generateTags } from "./ai.service.js";
 import { detectType, scrapeContent, scrapePdf } from "./scraper.service.js";
 
-export async function extractItemSource({ url, manualType, file }) {
+async function buildUploadSourceFields(file) {
+  return {
+    sourceKind: "upload",
+    sourceUrl: "",
+    sourceFileName: file.originalname || "",
+    sourceMimeType: file.mimetype || "",
+    sourceData: file.buffer || null,
+    sourceStoragePath: "",
+    sourceStatus: "available",
+  };
+}
+
+export async function buildPendingItemData({ url, manualType, file }) {
   if (!url && !file) {
     throw new Error("URL or file is required");
   }
 
   if (file) {
-    if (file.mimetype.startsWith("image/")) {
-      return {
-        url: url || `image-upload-${Date.now()}`,
-        type: "image",
-        title: file.originalname || "Image",
-        content: "",
-        thumbnail: `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
-      };
-    }
-
-    const pdfResult = await scrapePdf(file.buffer);
+    const sourceFields = await buildUploadSourceFields(file);
+    const isImage = file.mimetype.startsWith("image/");
 
     return {
-      url: url || `pdf-upload-${Date.now()}`,
-      type: "pdf",
-      title: pdfResult.title,
-      content: pdfResult.content,
-      thumbnail: pdfResult.thumbnail,
+      url: url || `${isImage ? "image" : "pdf"}-upload-${Date.now()}`,
+      type: isImage ? "image" : "pdf",
+      title: file.originalname || (isImage ? "Image" : "PDF Document"),
+      content: "",
+      thumbnail: "",
+      tags: [],
+      embedding: [],
+      status: "pending",
+      processingError: null,
+      summary: "",
+      chunkCount: 0,
+      embeddedAt: null,
+      ...sourceFields,
     };
   }
 
   const type = manualType || detectType(url);
-  const result = await scrapeContent(url, type);
 
   return {
     url,
     type,
-    title: result.title,
-    content: result.content,
-    thumbnail: result.thumbnail,
+    title: "Processing...",
+    content: "",
+    thumbnail: "",
+    tags: [],
+    embedding: [],
+    status: "pending",
+    processingError: null,
+    summary: "",
+    chunkCount: 0,
+    embeddedAt: null,
+    sourceKind: "url",
+    sourceUrl: url,
+    sourceFileName: "",
+    sourceMimeType: "",
+    sourceData: null,
+    sourceStoragePath: "",
+    sourceStatus: "available",
   };
 }
 
@@ -60,18 +84,56 @@ export async function buildItemAiFields({ title, content }) {
   };
 }
 
-export async function buildProcessedItemData({ url, manualType, file }) {
-  const sourceFields = await extractItemSource({ url, manualType, file });
-  const aiFields = await buildItemAiFields(sourceFields);
+async function extractProcessedFieldsFromItem(item) {
+  if (item.sourceKind === "url") {
+    if (!item.sourceUrl) {
+      throw new Error("Missing source URL for URL item");
+    }
 
-  return {
-    ...sourceFields,
-    ...aiFields,
-  };
+    const result = await scrapeContent(item.sourceUrl, item.type);
+
+    return {
+      url: item.sourceUrl,
+      type: item.type,
+      title: result.title,
+      content: result.content,
+      thumbnail: result.thumbnail,
+    };
+  }
+
+  if (item.sourceKind === "upload") {
+    if (item.sourceStatus !== "available" || !item.sourceData) {
+      throw new Error("Upload source data is not available");
+    }
+
+    const fileBuffer = item.sourceData;
+
+    if (item.type === "image") {
+      return {
+        url: item.url,
+        type: "image",
+        title: item.sourceFileName || item.title || "Image",
+        content: "",
+        thumbnail: `data:${item.sourceMimeType};base64,${fileBuffer.toString("base64")}`,
+      };
+    }
+
+    const pdfResult = await scrapePdf(fileBuffer);
+
+    return {
+      url: item.url,
+      type: "pdf",
+      title: pdfResult.title || item.sourceFileName || "PDF Document",
+      content: pdfResult.content,
+      thumbnail: pdfResult.thumbnail,
+    };
+  }
+
+  throw new Error(`Unsupported source kind: ${item.sourceKind}`);
 }
 
 export async function processIngestJob(itemId) {
-  const item = await Item.findById(itemId);
+  const item = await Item.findById(itemId).select("+sourceData");
 
   if (!item) {
     throw new Error(`Item not found: ${itemId}`);
@@ -86,14 +148,10 @@ export async function processIngestJob(itemId) {
   await item.save();
 
   try {
-    // We are keeping the worker conservative for now.
-    // Uploaded files are not persisted yet, so full background reprocessing
-    // would be unreliable. The next phase will move real ingestion here once
-    // raw source data is stored safely for every item type.
-    item.status = "ready";
-    item.processingError = null;
-    item.chunkCount = item.chunkCount || 0;
-    item.embeddedAt = item.embedding?.length ? item.embeddedAt || new Date() : null;
+    const processedFields = await extractProcessedFieldsFromItem(item);
+    const aiFields = await buildItemAiFields(processedFields);
+
+    Object.assign(item, processedFields, aiFields);
     await item.save();
 
     return { success: true, itemId: String(item._id) };

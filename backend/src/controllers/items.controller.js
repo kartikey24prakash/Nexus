@@ -1,6 +1,6 @@
 import Item from "../models/item.model.js";
 import { findRelatedItems } from "../services/ai.service.js";
-import { buildProcessedItemData } from "../services/ingest.service.js";
+import { buildPendingItemData } from "../services/ingest.service.js";
 import { enqueueItemIngest } from "../queues/ingest.queue.js";
 
 // save a new item - URL or PDF upload
@@ -13,19 +13,18 @@ export const saveItem = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "URL or file is required" });
     }
 
-    const processedItem = await buildProcessedItemData({
+    const pendingItem = await buildPendingItemData({
       url,
       manualType,
       file,
     });
 
     const item = await Item.create({
-      ...processedItem,
+      ...pendingItem,
       user: req.user._id,
       collection: collectionId || null,
     });
 
-    // Keep queue handoff non-blocking so item creation behavior stays the same.
     void enqueueItemIngest(item._id);
 
     res.status(201).json({ success: true, item });

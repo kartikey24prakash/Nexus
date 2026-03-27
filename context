@@ -1,0 +1,77 @@
+Here’s the compact working summary for continuation:
+
+1. Project:
+- `frontend` = React/Vite
+- `backend` = Express/MongoDB
+
+2. Backend status:
+- Redis Cloud connected
+- BullMQ queue working
+- worker running
+- jobs complete successfully
+
+3. Files added/important:
+- [cache.js](C:/Users/HP/Desktop/Nexus/backend/src/config/cache.js)
+- [uploads.js](C:/Users/HP/Desktop/Nexus/backend/src/config/uploads.js)
+- [ingest.queue.js](C:/Users/HP/Desktop/Nexus/backend/src/queues/ingest.queue.js)
+- [ingest.worker.js](C:/Users/HP/Desktop/Nexus/backend/src/workers/ingest.worker.js)
+- [ingest.service.js](C:/Users/HP/Desktop/Nexus/backend/src/services/ingest.service.js)
+
+4. Item model now includes:
+- `status`
+- `processingError`
+- `summary`
+- `chunkCount`
+- `embeddedAt`
+- `sourceKind`
+- `sourceUrl`
+- `sourceFileName`
+- `sourceMimeType`
+- `sourceStoragePath`
+- `sourceStatus`
+
+5. Current ingestion flow:
+- `POST /api/items` creates item fast as `pending`
+- worker processes item in background
+- worker fills `title`, `content`, `thumbnail`, `tags`, `embedding`
+- item becomes `ready`
+- `processingError` is used on failure
+
+6. Uploads:
+- uploads now persist to `backend/uploads`
+- file path saved in `sourceStoragePath`
+- upload source marked `available`
+
+7. APIs:
+- existing APIs still working
+- Postman verified
+- frontend still works with current API shape
+
+8. Frontend:
+- current frontend is being used
+- item detail page now supports saving/removing an item to/from a collection
+- files changed:
+  - [useCollections.js](C:/Users/HP/Desktop/Nexus/frontend/src/feature/collections/hook/useCollections.js)
+  - [ItemDetail.jsx](C:/Users/HP/Desktop/Nexus/frontend/src/feature/dashboard/pages/ItemDetail.jsx)
+  - [itemdetail.css](C:/Users/HP/Desktop/Nexus/frontend/src/feature/dashboard/pages/itemdetail.css)
+
+9. Fixed issues:
+- resurface import path bug fixed
+- BullMQ invalid job id fixed
+- Mongoose `new: true` warnings fixed
+
+10. Redis config:
+- using Redis Cloud host/port/password
+- current setup worked with `REDIS_TLS=false`
+
+11. Current confirmed result:
+- async ingestion works
+- embedding visible in MongoDB after worker processing
+- system feels good
+
+12. Next recommended step:
+- implement chunking
+- then vector DB integration
+- then true RAG retrieval over chunks
+
+If context gets tight later, you can paste just this summary and we can continue cleanly.
