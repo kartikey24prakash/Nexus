@@ -1,44 +1,87 @@
 .search-page {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
+    padding-top: 28px;
+}
+
+.search-hero {
+    width: min(780px, 100%);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+}
+
+.search-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: rgba(162, 216, 255, 0.7);
+}
+
+.search-title {
+    font-size: clamp(26px, 4vw, 42px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: #f4fbff;
+}
+
+.search-copy {
+    font-size: 13px;
+    color: rgba(223, 238, 255, 0.54);
 }
 
 .search-bar {
-    padding: 14px;
+    width: min(700px, 100%);
+    margin: 0 auto;
+}
+
+.search-bar-shell {
     display: flex;
-    gap: 10px;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 22px;
-    background: rgba(18, 12, 10, 0.82);
-    backdrop-filter: blur(16px);
+    gap: 8px;
+    padding: 10px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(12, 22, 36, 0.88), rgba(10, 19, 31, 0.82));
+    border: 1px solid rgba(172, 220, 255, 0.14);
+    box-shadow:
+        0 18px 38px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
 }
 
 .search-input {
     flex: 1;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    padding: 12px 14px;
+    background: rgba(164, 216, 255, 0.04);
+    border: 1px solid rgba(172, 220, 255, 0.1);
+    border-radius: 16px;
+    padding: 11px 14px;
     font-size: 14px;
     color: #EEEEEE;
     outline: none;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.search-input:focus { border-color: #63b4ff; }
-.search-input::placeholder { color: #666; }
+.search-input:focus {
+    border-color: rgba(118, 197, 255, 0.54);
+    box-shadow: 0 0 0 3px rgba(98, 184, 255, 0.1);
+}
+
+.search-input::placeholder { color: rgba(220, 236, 255, 0.32); }
 
 .search-btn {
     background: linear-gradient(135deg, #4fa6ff, #8fd7ff);
     color: #031421;
     border: none;
-    border-radius: 14px;
-    padding: 11px 18px;
-    font-size: 13px;
+    border-radius: 16px;
+    padding: 10px 16px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     transition: opacity 0.15s;
+    box-shadow: 0 12px 28px rgba(87, 155, 255, 0.2);
 }
 
 .search-btn:hover { opacity: 0.88; }
@@ -48,13 +91,15 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
+    width: min(1080px, 100%);
+    margin: 0 auto;
 }
 
 .results-section { display: flex; flex-direction: column; gap: 10px; }
 
 .results-label {
     font-size: 11px;
-    color: rgba(255, 184, 127, 0.64);
+    color: rgba(168, 220, 255, 0.68);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -63,7 +108,7 @@
     gap: 8px;
 }
 
-.results-label.semantic { color: #F7A96A; }
+.results-label.semantic { color: #9fdcff; }
 
 .semantic-badge {
     font-size: 9px;
@@ -76,8 +121,8 @@
 }
 
 .search-result {
-    background: rgba(19, 16, 14, 0.84);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: linear-gradient(180deg, rgba(10, 20, 32, 0.8), rgba(9, 18, 29, 0.74));
+    border: 1px solid rgba(146, 214, 255, 0.09);
     border-radius: 20px;
     padding: 14px 16px;
     cursor: pointer;
@@ -86,7 +131,7 @@
 }
 
 .search-result:hover {
-    border-color: rgba(255, 154, 92, 0.2);
+    border-color: rgba(143, 213, 255, 0.24);
     transform: translateY(-1px);
 }
 
@@ -131,15 +176,21 @@
 .search-empty {
     text-align: center;
     color: rgba(255,255,255,0.46);
-    font-size: 13px;
-    padding: 48px 20px;
-    background: rgba(15, 12, 11, 0.72);
-    border: 1px solid rgba(255,255,255,0.06);
+    font-size: 12px;
+    padding: 28px 18px;
+    background: rgba(10, 19, 31, 0.68);
+    border: 1px solid rgba(146, 214, 255, 0.1);
     border-radius: 18px;
+    width: min(700px, 100%);
+    margin: 0 auto;
 }
 
 @media (max-width: 640px) {
-    .search-bar {
+    .search-page {
+        padding-top: 12px;
+    }
+
+    .search-bar-shell {
         flex-direction: column;
     }
 

@@ -35,10 +35,10 @@ export default function AppBackground() {
         nodeGeometry.setAttribute('position', new THREE.BufferAttribute(nodePositions, 3))
 
         const nodeMaterial = new THREE.PointsMaterial({
-            color: '#7fd4ff',
-            size: 2.6,
+            color: '#92ddff',
+            size: 2.9,
             transparent: true,
-            opacity: 0.88,
+            opacity: 0.92,
         })
 
         const points = new THREE.Points(nodeGeometry, nodeMaterial)
@@ -50,9 +50,9 @@ export default function AppBackground() {
         lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3))
 
         const lineMaterial = new THREE.LineBasicMaterial({
-            color: '#5db5ff',
+            color: '#77c7ff',
             transparent: true,
-            opacity: 0.18,
+            opacity: 0.24,
         })
 
         const lines = new THREE.LineSegments(lineGeometry, lineMaterial)
@@ -61,13 +61,24 @@ export default function AppBackground() {
         const glow = new THREE.Mesh(
             new THREE.SphereGeometry(30, 32, 32),
             new THREE.MeshBasicMaterial({
-                color: '#63b4ff',
+                color: '#79c4ff',
                 transparent: true,
-                opacity: 0.08,
+                opacity: 0.12,
             })
         )
         glow.position.set(24, 8, -50)
         scene.add(glow)
+
+        const glowSecondary = new THREE.Mesh(
+            new THREE.SphereGeometry(24, 32, 32),
+            new THREE.MeshBasicMaterial({
+                color: '#3b7dff',
+                transparent: true,
+                opacity: 0.08,
+            })
+        )
+        glowSecondary.position.set(-34, -20, -60)
+        scene.add(glowSecondary)
 
         const resize = () => {
             const width = mount.clientWidth || window.innerWidth
@@ -128,6 +139,8 @@ export default function AppBackground() {
             points.rotation.z += 0.00045
             glow.position.x = 18 + Math.sin(Date.now() * 0.00035) * 12
             glow.position.y = 8 + Math.cos(Date.now() * 0.00028) * 8
+            glowSecondary.position.x = -30 + Math.cos(Date.now() * 0.00024) * 10
+            glowSecondary.position.y = -18 + Math.sin(Date.now() * 0.00031) * 12
 
             renderer.render(scene, camera)
         }
@@ -143,6 +156,8 @@ export default function AppBackground() {
             lineMaterial.dispose()
             glow.geometry.dispose()
             glow.material.dispose()
+            glowSecondary.geometry.dispose()
+            glowSecondary.material.dispose()
             renderer.dispose()
             if (renderer.domElement.parentNode === mount) {
                 mount.removeChild(renderer.domElement)

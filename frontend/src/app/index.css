@@ -12,7 +12,10 @@ html,body,#root{
 html,body{
   overflow-x: hidden;
   overflow-y: auto;
-  background: #0F0F0F;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(94, 177, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 82% 8%, rgba(133, 206, 255, 0.1), transparent 20%),
+    linear-gradient(180deg, #07101c 0%, #09111c 52%, #0a1421 100%);
   color: #EEEEEE;
   font-family: 'Syne', sans-serif;
 }
@@ -42,17 +45,18 @@ select{
   min-height: 100dvh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 18% 12%, rgba(82, 172, 255, 0.18), transparent 22%),
-    radial-gradient(circle at 82% 10%, rgba(118, 199, 255, 0.12), transparent 18%),
-    linear-gradient(180deg, #05080d 0%, #070b12 100%);
+    radial-gradient(circle at 14% 12%, rgba(92, 179, 255, 0.2), transparent 24%),
+    radial-gradient(circle at 82% 10%, rgba(118, 199, 255, 0.14), transparent 20%),
+    radial-gradient(circle at 50% 76%, rgba(31, 77, 126, 0.26), transparent 34%),
+    linear-gradient(180deg, #06101b 0%, #08121d 52%, #0a1523 100%);
 }
 
 .nexus-shell-overlay {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 50% 0%, rgba(93, 181, 255, 0.08), transparent 30%),
-    linear-gradient(180deg, rgba(4, 8, 14, 0.18), rgba(5, 8, 12, 0.76));
+    radial-gradient(circle at 50% 0%, rgba(93, 181, 255, 0.1), transparent 30%),
+    linear-gradient(180deg, rgba(8, 15, 24, 0.12), rgba(8, 15, 25, 0.58));
   pointer-events: none;
   z-index: 1;
 }
@@ -122,7 +126,7 @@ select{
 .app-bg-canvas {
   position: absolute;
   inset: 0;
-  opacity: 0.7;
+  opacity: 0.82;
 }
 
 .app-bg-canvas canvas {
@@ -135,9 +139,9 @@ select{
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 18% 18%, rgba(80, 175, 255, 0.16), transparent 24%),
-    radial-gradient(circle at 78% 18%, rgba(82, 157, 255, 0.12), transparent 18%),
-    radial-gradient(circle at 56% 76%, rgba(32, 82, 132, 0.18), transparent 34%);
+    radial-gradient(circle at 16% 18%, rgba(92, 186, 255, 0.18), transparent 24%),
+    radial-gradient(circle at 80% 18%, rgba(98, 166, 255, 0.14), transparent 18%),
+    radial-gradient(circle at 58% 76%, rgba(41, 95, 150, 0.22), transparent 34%);
 }
 
 .app-bg-grid {
@@ -169,11 +173,11 @@ select{
   gap: 10px;
   padding: 8px 10px 8px 8px;
   border-radius: 24px;
-  background: rgba(9, 14, 20, 0.74);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 17, 29, 0.72);
+  border: 1px solid rgba(145, 214, 255, 0.12);
   box-shadow:
-    0 24px 80px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 24px 80px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(200, 234, 255, 0.08);
   backdrop-filter: blur(22px);
 }
 
@@ -259,8 +263,8 @@ select{
 }
 
 .floating-profile-trigger {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(145, 214, 255, 0.12);
+  background: rgba(126, 198, 255, 0.05);
   color: #eef8ff;
   border-radius: 20px;
   padding: 7px 9px 7px 7px;
@@ -314,8 +318,8 @@ select{
   min-width: 180px;
   padding: 10px;
   border-radius: 18px;
-  background: rgba(14, 11, 10, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(9, 18, 29, 0.94);
+  border: 1px solid rgba(145, 214, 255, 0.12);
   box-shadow: 0 16px 42px rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(18px);
 }

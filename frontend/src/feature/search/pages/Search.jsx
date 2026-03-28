@@ -28,23 +28,28 @@ export default function Search() {
     }
 
     return (
-        <AppShell
-            title="Search Across Everything"
-            subtitle="Jump between exact matches and meaning-based retrieval without losing context."
-        >
+        <AppShell showHeader={false}>
             <div className="search-page">
+                <div className="search-hero">
+                    <div className="search-kicker">Search</div>
+                    <div className="search-title">Find in your workspace</div>
+                    <div className="search-copy">Exact or related, all in one flow.</div>
+                </div>
+
                 <form className="search-bar" onSubmit={handleSubmit}>
-                    <input
-                        className="search-input"
-                        type="text"
-                        placeholder="Search your saves..."
-                        value={input}
-                        onChange={handleChange}
-                        autoFocus
-                    />
-                    <button className="search-btn" type="submit" disabled={loading}>
-                        {loading ? '...' : 'Search'}
-                    </button>
+                        <div className="search-bar-shell">
+                        <input
+                            className="search-input"
+                            type="text"
+                            placeholder="Search your saves..."
+                            value={input}
+                            onChange={handleChange}
+                            autoFocus
+                        />
+                        <button className="search-btn" type="submit" disabled={loading}>
+                            {loading ? '...' : 'Search'}
+                        </button>
+                        </div>
                 </form>
 
                 <div className="search-results">
@@ -78,7 +83,7 @@ export default function Search() {
                         <div className="search-empty">No results found for "{input}"</div>
                     )}
 
-                    {!input && (
+                    {!input && keywordResults.length === 0 && semanticResults.length === 0 && !loading && (
                         <div className="search-empty">Type something to search your saves</div>
                     )}
                 </div>

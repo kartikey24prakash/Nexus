@@ -34,42 +34,40 @@ export default function Ask() {
     }
 
     return (
-        <AppShell
-            title="Ask Your Knowledge Base"
-            subtitle="One focused space for retrieval-backed answers, related saves, and quick exploration."
-        >
+        <AppShell showHeader={false}>
             <div className="ask-page">
                 <div className="ask-hero">
-                    <div className="ask-hero-title">Talk to your knowledge base</div>
-                    <div className="ask-hero-copy">
-                        Ask questions about your notes, saved links, PDFs, and ideas in one place.
-                    </div>
+                    <div className="ask-hero-kicker">Ask</div>
+                    <div className="ask-hero-title">Your personal AI</div>
                 </div>
 
                 <form className="ask-form" onSubmit={handleSubmit}>
-                    <textarea
-                        className="ask-input"
-                        rows="5"
-                        placeholder="Ask anything about your saved notes, PDFs, links, or a broader topic..."
-                        value={question}
-                        onChange={(e) => setQuestion(e.target.value)}
-                    />
-                    <button className="ask-submit" type="submit" disabled={loading}>
-                        {loading ? 'Thinking...' : 'Ask Nexus'}
-                    </button>
+                    <div className="ask-composer-glow" aria-hidden="true" />
+                    <div className="ask-composer-shell">
+                        <textarea
+                            className="ask-input"
+                            rows="2"
+                            placeholder="Ask anything..."
+                            value={question}
+                            onChange={(e) => setQuestion(e.target.value)}
+                        />
+                        <div className="ask-composer-actions">
+                            <span className="ask-chip">Personal</span>
+                            <button className="ask-submit" type="submit" disabled={loading}>
+                                {loading ? 'Thinking' : 'Ask'}
+                            </button>
+                        </div>
+                    </div>
                 </form>
 
                 {error && <div className="ask-error">{error}</div>}
 
                 {!result && !loading && (
-                    <div className="ask-empty">
-                        Start with a question like "What does my saved PDF say about RAG?" or "Explain vector databases simply."
-                    </div>
+                    <div className="ask-empty">Ask from your saves or anything broader.</div>
                 )}
 
                 {result?.answer && (
                     <div className="ask-answer-card">
-                        <div className="ask-answer-label">Answer</div>
                         <div className="ask-answer-text">{result.answer}</div>
 
                         {topSource && (
@@ -81,7 +79,7 @@ export default function Ask() {
                                 <span className="ask-top-source-label">Most Related Save</span>
                                 <span className="ask-top-source-title">{topSource.title || 'Untitled'}</span>
                                 <span className="ask-top-source-meta">
-                                    chunk {topSource.chunkIndex} • {Math.round((topSource.score || 0) * 100)}% match
+                                    {Math.round((topSource.score || 0) * 100)}% match
                                 </span>
                             </button>
                         )}
@@ -98,7 +96,7 @@ export default function Ask() {
                                     >
                                         <span className="ask-source-title">{source.title || 'Untitled'}</span>
                                         <span className="ask-source-meta">
-                                            chunk {source.chunkIndex} • {Math.round((source.score || 0) * 100)}% match
+                                            {Math.round((source.score || 0) * 100)}% match
                                         </span>
                                     </button>
                                 ))}
