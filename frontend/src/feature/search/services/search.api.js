@@ -14,3 +14,8 @@ export async function keywordSearch({ q, type }) {
     const response = await api.get('/api/search/keyword', { params: { q, type } })
     return response.data
 }
+
+export async function askQuestion({ question, type, collection }) {
+    const response = await api.post('/api/chat/ask', { question, type, collection })
+    return response.data
+}

@@ -13,7 +13,7 @@ function App() {
     auth.handleGetMe()
   }, [])
   return (
-    <>
+    <div className="app-shell">
       <Toaster position="top-right" toastOptions={{
         style: {
           background: '#1A1A1A',
@@ -22,7 +22,7 @@ function App() {
         }
       }} />
       <RouterProvider router={router} />
-    </>
+    </div>
   )
 }
 

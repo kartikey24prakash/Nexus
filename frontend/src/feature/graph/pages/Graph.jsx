@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import * as d3 from 'd3'
+import AppShell from '../../../app/components/AppShell'
 import { useGraph } from '../hook/useGraph'
 import './graph.css'
 
@@ -15,6 +16,7 @@ const TYPE_COLORS = {
 export default function Graph() {
     const navigate = useNavigate()
     const svgRef = useRef(null)
+    const tooltipRef = useRef(null)
     const { nodes, edges, stats, loading, handleGetGraph } = useGraph()
 
     useEffect(() => {
@@ -22,63 +24,66 @@ export default function Graph() {
     }, [])
 
     useEffect(() => {
-        if (!nodes.length || !svgRef.current) return
-        const cleanup = drawGraph()
-        return cleanup
-    }, [nodes, edges])
+        if (!tooltipRef.current) {
+            tooltipRef.current = d3.select('body').append('div')
+                .style('position', 'absolute')
+                .style('background', '#120f0e')
+                .style('border', '1px solid rgba(255,255,255,0.08)')
+                .style('border-radius', '12px')
+                .style('padding', '8px 10px')
+                .style('font-size', '12px')
+                .style('color', '#EEEEEE')
+                .style('pointer-events', 'none')
+                .style('opacity', 0)
+                .style('white-space', 'nowrap')
+                .style('z-index', 9999)
+                .style('box-shadow', '0 18px 40px rgba(0,0,0,0.28)')
+        }
 
-    const tooltip = d3.select("body").append("div")
-    .style("position", "absolute")
-    .style("background", "#1A1A1A")
-    .style("border", "0.5px solid #2a2a2a")
-    .style("border-radius", "8px")
-    .style("padding", "6px 10px")
-    .style("font-size", "12px")
-    .style("color", "#EEEEEE")
-    .style("pointer-events", "none")
-    .style("opacity", 0)
-    .style("white-space", "nowrap")
-    .style("z-index", 9999)
+        return () => {
+            tooltipRef.current?.remove()
+            tooltipRef.current = null
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!nodes.length || !svgRef.current) return undefined
+        return drawGraph()
+    }, [nodes, edges])
 
     function drawGraph() {
         const container = svgRef.current.parentElement
         const width = container.clientWidth
         const height = container.clientHeight
 
-        // clear previous
         d3.select(svgRef.current).selectAll('*').remove()
 
         const svg = d3.select(svgRef.current)
             .attr('width', width)
             .attr('height', height)
 
-        // zoom
         const g = svg.append('g')
         svg.call(d3.zoom().scaleExtent([0.3, 3]).on('zoom', (e) => {
             g.attr('transform', e.transform)
         }))
 
-        // copy nodes and edges for d3 mutation
         const graphNodes = nodes.map(n => ({ ...n }))
         const graphEdges = edges.map(e => ({ ...e }))
 
-        // simulation
         const simulation = d3.forceSimulation(graphNodes)
-            .force('link', d3.forceLink(graphEdges).id(d => d.id).distance(120))
-            .force('charge', d3.forceManyBody().strength(-300))
+            .force('link', d3.forceLink(graphEdges).id(d => d.id).distance(126))
+            .force('charge', d3.forceManyBody().strength(-320))
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('collision', d3.forceCollide(40))
+            .force('collision', d3.forceCollide(42))
 
-        // edges
         const link = g.append('g')
             .selectAll('line')
             .data(graphEdges)
             .enter().append('line')
-            .attr('stroke', '#2a2a2a')
+            .attr('stroke', 'rgba(255,255,255,0.12)')
             .attr('stroke-width', d => Math.min(d.strength, 3))
-            .attr('stroke-opacity', 0.8)
+            .attr('stroke-opacity', 0.7)
 
-        // nodes
         const node = g.append('g')
             .selectAll('g')
             .data(graphNodes)
@@ -87,53 +92,75 @@ export default function Graph() {
             .call(d3.drag()
                 .on('start', (e, d) => {
                     if (!e.active) simulation.alphaTarget(0.3).restart()
-                    d.fx = d.x; d.fy = d.y
+                    d.fx = d.x
+                    d.fy = d.y
                 })
-                .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y })
+                .on('drag', (e, d) => {
+                    d.fx = e.x
+                    d.fy = e.y
+                })
                 .on('end', (e, d) => {
                     if (!e.active) simulation.alphaTarget(0)
-                    d.fx = null; d.fy = null
+                    d.fx = null
+                    d.fy = null
                 })
             )
             .on('click', (e, d) => navigate(`/item/${d.id}`))
 
-        // node circle
-        node.append('circle')
-            .attr('r', 18)
-            .attr('fill', d => TYPE_COLORS[d.type] + '22')
-            .attr('stroke', d => TYPE_COLORS[d.type] || '#F97316')
-            .attr('stroke-width', 1.5)
+        const defs = svg.append('defs')
 
-        // node type dot
-        node.append('circle')
-            .attr('r', 5)
-            .attr('fill', d => TYPE_COLORS[d.type] || '#F97316')
+        graphNodes.forEach((nodeData) => {
+            if (!nodeData.thumbnail) return
 
-        // node label
-        node.append('text')
-            .attr('dy', 32)
-            .attr('text-anchor', 'middle')
-            .attr('fill', '#888')
-            .attr('font-size', '10px')
-            .attr('font-family', 'Inter, sans-serif')
-            .text(d => d.title.length > 20 ? d.title.slice(0, 20) + '...' : d.title)
-
-        /// update mouseover/mouseout:
-        node.on('mouseover', function (e, d) {
-            d3.select(this).select('circle:first-child')
-                .attr('stroke-width', 2.5)
-            tooltip
-                .style("opacity", 1)
-                .html(d.title)
-                .style("left", (e.pageX + 10) + "px")
-                .style("top", (e.pageY - 10) + "px")
-        }).on('mouseout', function () {
-            d3.select(this).select('circle:first-child')
-                .attr('stroke-width', 1.5)
-            tooltip.style("opacity", 0)
+            defs.append('pattern')
+                .attr('id', `thumb-${nodeData.id}`)
+                .attr('patternUnits', 'objectBoundingBox')
+                .attr('width', 1)
+                .attr('height', 1)
+                .append('image')
+                .attr('href', nodeData.thumbnail)
+                .attr('width', 52)
+                .attr('height', 52)
+                .attr('preserveAspectRatio', 'xMidYMid slice')
         })
 
-        // tick
+        node.append('circle')
+            .attr('r', 24)
+            .attr('fill', d => d.thumbnail ? `url(#thumb-${d.id})` : `${TYPE_COLORS[d.type] || '#67b8ff'}22`)
+            .attr('stroke', 'rgba(8, 15, 24, 0.95)')
+            .attr('stroke-width', 5)
+
+        node.append('circle')
+            .attr('r', 28)
+            .attr('fill', 'transparent')
+            .attr('stroke', d => TYPE_COLORS[d.type] || '#67b8ff')
+            .attr('stroke-width', 1.6)
+            .attr('stroke-opacity', 0.9)
+
+        node.append('circle')
+            .attr('r', 5)
+            .attr('fill', d => TYPE_COLORS[d.type] || '#67b8ff')
+
+        node.append('text')
+            .attr('dy', 42)
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'rgba(225,242,255,0.42)')
+            .attr('font-size', '10px')
+            .attr('font-family', 'Syne, sans-serif')
+            .text(d => d.title.length > 20 ? `${d.title.slice(0, 20)}...` : d.title)
+
+        node.on('mouseover', function handleOver(e, d) {
+            d3.select(this).select('circle:nth-child(2)').attr('stroke-width', 2.8)
+            tooltipRef.current
+                .style('opacity', 1)
+                .html(d.title)
+                .style('left', `${e.pageX + 10}px`)
+                .style('top', `${e.pageY - 10}px`)
+        }).on('mouseout', function handleOut() {
+            d3.select(this).select('circle:nth-child(2)').attr('stroke-width', 1.6)
+            tooltipRef.current?.style('opacity', 0)
+        })
+
         simulation.on('tick', () => {
             link
                 .attr('x1', d => d.source.x)
@@ -143,60 +170,47 @@ export default function Graph() {
 
             node.attr('transform', d => `translate(${d.x},${d.y})`)
         })
-        return () => tooltip.remove()
+
+        return () => {
+            simulation.stop()
+        }
     }
 
     return (
-        <div className="graph-page">
-            {/* ── Topbar ── */}
-            <div className="graph-topbar">
-                <span className="graph-logo">Knowledge Graph</span>
-                <div className="graph-stats">
-                    <span>{stats?.totalNodes || 0} nodes</span>
-                    <span>{stats?.totalEdges || 0} connections</span>
-                </div>
-            </div>
-
-            {/* ── Graph canvas ── */}
-            <div className="graph-canvas">
-                {loading && <div className="graph-loading">Loading graph...</div>}
-                {!loading && nodes.length === 0 && (
-                    <div className="graph-empty">
-                        Save more items to see your knowledge graph grow.
+        <AppShell
+            title=""
+            subtitle=""
+            showHeader={false}
+        >
+            <div className="graph-page">
+                <div className="graph-canvas">
+                    <div className="graph-overlay">
+                        <div className="graph-overlay-title">Knowledge Graph</div>
+                        <div className="graph-overlay-subtitle">A live map of your saved ideas and how they connect.</div>
+                        <div className="graph-stats">
+                            <span>{stats?.totalNodes || 0} nodes</span>
+                            <span>{stats?.totalEdges || 0} connections</span>
+                        </div>
                     </div>
-                )}
-                <svg ref={svgRef} style={{ width: '100%', height: '100%' }} />
-            </div>
 
-            {/* ── Legend ── */}
-            <div className="graph-legend">
-                {Object.entries(TYPE_COLORS).map(([type, color]) => (
-                    <div key={type} className="legend-item">
-                        <div className="legend-dot" style={{ background: color }} />
-                        <span>{type}</span>
-                    </div>
-                ))}
-            </div>
+                    {loading && <div className="graph-loading">Loading graph...</div>}
+                    {!loading && nodes.length === 0 && (
+                        <div className="graph-empty">
+                            Save more items to see your knowledge graph grow.
+                        </div>
+                    )}
+                    <svg ref={svgRef} style={{ width: '100%', height: '100%' }} />
+                </div>
 
-            {/* ── Bottom nav ── */}
-            <div className="bottom-nav">
-                <div className="nav-item" onClick={() => navigate('/')}>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="2" fill="#333" /><rect x="11" y="2" width="7" height="7" rx="2" fill="#333" /><rect x="2" y="11" width="7" height="7" rx="2" fill="#333" /><rect x="11" y="11" width="7" height="7" rx="2" fill="#333" /></svg>
-                    <span className="nav-label">Feed</span>
-                </div>
-                <div className="nav-item" onClick={() => navigate('/search')}>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5" stroke="#444" strokeWidth="1.5" /><path d="M14 14l4 4" stroke="#444" strokeWidth="1.5" strokeLinecap="round" /></svg>
-                    <span className="nav-label">Search</span>
-                </div>
-                <div className="nav-item active" onClick={() => navigate('/graph')}>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="5" cy="10" r="2.5" fill="#F97316" /><circle cx="15" cy="5" r="2.5" fill="#F97316" /><circle cx="15" cy="15" r="2.5" fill="#F97316" /><path d="M7.5 9L12.5 6M7.5 11L12.5 14" stroke="#F97316" strokeWidth="1" /></svg>
-                    <span className="nav-label active">Graph</span>
-                </div>
-                <div className="nav-item" onClick={() => navigate('/collections')}>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="12" rx="2" stroke="#444" strokeWidth="1.5" /><path d="M7 5V4M13 5V4" stroke="#444" strokeWidth="1.5" strokeLinecap="round" /></svg>
-                    <span className="nav-label">Collections</span>
+                <div className="graph-legend">
+                    {Object.entries(TYPE_COLORS).map(([type, color]) => (
+                        <div key={type} className="legend-item">
+                            <div className="legend-dot" style={{ background: color }} />
+                            <span>{type}</span>
+                        </div>
+                    ))}
                 </div>
             </div>
-        </div>
+        </AppShell>
     )
 }

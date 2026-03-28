@@ -1,14 +1,8 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import ytdl from "ytdl-core";
-import { createRequire } from "module";
-// import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const { parsePdf } = require("./pdf.helper.cjs");
-import {getDocument} from "pdfjs-dist/legacy/build/pdf.mjs";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 
-
-// ─── Detect content type from URL ─────────────────────────────────────────────
 export const detectType = (url) => {
   if (/twitter\.com|x\.com/.test(url)) return "tweet";
   if (/youtube\.com|youtu\.be/.test(url)) return "youtube";
@@ -17,7 +11,6 @@ export const detectType = (url) => {
   return "article";
 };
 
-// ─── Article scraper ──────────────────────────────────────────────────────────
 const scrapeArticle = async (url) => {
   const { data } = await axios.get(url, {
     headers: { "User-Agent": "Mozilla/5.0" },
@@ -25,8 +18,6 @@ const scrapeArticle = async (url) => {
   });
 
   const $ = cheerio.load(data);
-
-  // remove noise
   $("script, style, nav, footer, header, aside, iframe").remove();
 
   const title =
@@ -34,12 +25,11 @@ const scrapeArticle = async (url) => {
     $("title").text() ||
     "Untitled";
 
-  const thumbnail =
-    $("meta[property='og:image']").attr("content") || "";
+  const thumbnail = $("meta[property='og:image']").attr("content") || "";
 
-  // grab main content — try common content selectors first
   const contentSelectors = ["article", "main", ".post-content", ".entry-content", "body"];
   let content = "";
+
   for (const selector of contentSelectors) {
     const text = $(selector).text().trim();
     if (text.length > 200) {
@@ -48,21 +38,15 @@ const scrapeArticle = async (url) => {
     }
   }
 
-  // clean up whitespace
   content = content.replace(/\s+/g, " ").trim().slice(0, 5000);
 
   return { title, content, thumbnail };
 };
 
-// ─── Tweet scraper ────────────────────────────────────────────────────────────
 const scrapeTweet = async (url) => {
-  // extract tweet ID from URL
   const match = url.match(/status\/(\d+)/);
   if (!match) throw new Error("Invalid tweet URL");
 
-  const tweetId = match[1];
-
-  // Twitter oembed — no API key needed
   const { data } = await axios.get(
     `https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`,
     { timeout: 10000 }
@@ -76,21 +60,54 @@ const scrapeTweet = async (url) => {
   return { title, content, thumbnail };
 };
 
-// ─── YouTube scraper ──────────────────────────────────────────────────────────
+const fetchYoutubeTranscript = async (info) => {
+  try {
+    const captionTracks =
+      info.player_response?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+
+    if (!captionTracks.length) return "";
+
+    const preferredTrack =
+      captionTracks.find((track) => track.languageCode === "en" && !track.kind) ||
+      captionTracks.find((track) => track.languageCode === "en") ||
+      captionTracks.find((track) => !track.kind) ||
+      captionTracks[0];
+
+    if (!preferredTrack?.baseUrl) return "";
+
+    const { data } = await axios.get(preferredTrack.baseUrl, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      timeout: 10000,
+    });
+
+    const $ = cheerio.load(data, { xmlMode: true });
+
+    return $("text")
+      .map((_, element) => $(element).text().trim())
+      .get()
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+  } catch (error) {
+    console.warn("[Scraper] YouTube transcript fetch failed:", error.message);
+    return "";
+  }
+};
+
 const scrapeYoutube = async (url) => {
   const info = await ytdl.getBasicInfo(url);
   const details = info.videoDetails;
+  const transcript = await fetchYoutubeTranscript(info);
 
   const title = details.title || "YouTube Video";
-  const content = details.description || "";
+  const description = details.description || "";
+  const content = [description, transcript].filter(Boolean).join("\n\n").slice(0, 15000);
   const thumbnail = details.thumbnails?.[details.thumbnails.length - 1]?.url || "";
 
   return { title, content, thumbnail };
 };
 
-// ─── Image scraper ────────────────────────────────────────────────────────────
 const scrapeImage = async (url) => {
-  // for images we just store the URL itself
   const title = url.split("/").pop().split("?")[0] || "Image";
   const content = "";
   const thumbnail = url;
@@ -98,37 +115,36 @@ const scrapeImage = async (url) => {
   return { title, content, thumbnail };
 };
 
-// ─── PDF scraper ──────────────────────────────────────────────────────────────
 export const scrapePdf = async (fileBuffer) => {
-    const uint8Array = new Uint8Array(fileBuffer);
-    const loadingTask = getDocument({ data: uint8Array });
-    const pdf = await loadingTask.promise;
-    
-    let text = "";
-    for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        text += content.items.map(item => item.str).join(" ") + " ";
-    }
+  const uint8Array = new Uint8Array(fileBuffer);
+  const loadingTask = getDocument({ data: uint8Array });
+  const pdf = await loadingTask.promise;
 
-    return {
-        title: "PDF Document",
-        content: text.replace(/\s+/g, " ").trim().slice(0, 5000),
-        thumbnail: "",
-    };
+  let text = "";
+
+  for (let i = 1; i <= pdf.numPages; i += 1) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((item) => item.str).join(" ") + " ";
+  }
+
+  return {
+    title: "PDF Document",
+    content: text.replace(/\s+/g, " ").trim().slice(0, 5000),
+    thumbnail: "",
+  };
 };
 
-// ─── Main scraper function ────────────────────────────────────────────────────
 export const scrapeContent = async (url, type) => {
   switch (type) {
     case "article":
-      return await scrapeArticle(url);
+      return scrapeArticle(url);
     case "tweet":
-      return await scrapeTweet(url);
+      return scrapeTweet(url);
     case "youtube":
-      return await scrapeYoutube(url);
+      return scrapeYoutube(url);
     case "image":
-      return await scrapeImage(url);
+      return scrapeImage(url);
     default:
       throw new Error(`Unknown content type: ${type}`);
   }

@@ -12,7 +12,7 @@ export default function NexusBackground() {
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: false, antialias: true })
     renderer.setSize(W, H)
-    renderer.setClearColor(0x080200, 1)
+    renderer.setClearColor(0x05080d, 1)
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 1000)
@@ -92,7 +92,7 @@ export default function NexusBackground() {
 
         // deep crimson troughs → bright orange-amber peaks
         const norm = Math.max(0, Math.min(1, (z + 40) / 80))
-        col.setXYZ(i, 0.35 + norm * 0.65, norm * 0.38, 0.0)
+        col.setXYZ(i, 0.10 + norm * 0.25, 0.28 + norm * 0.42, 0.45 + norm * 0.5)
       }
 
       pos.needsUpdate = true

@@ -1,36 +1,60 @@
 .graph-page {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    background: #0F0F0F;
-    color: #EEEEEE;
-}
-
-.graph-topbar {
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 0.5px solid #1e1e1e;
-}
-
-.graph-logo {
-    font-size: 18px;
-    font-weight: 600;
-    color: #F97316;
+    gap: 0;
 }
 
 .graph-stats {
     display: flex;
-    gap: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
     font-size: 12px;
-    color: #555;
+    color: rgba(255,255,255,0.46);
+}
+
+.graph-stats span {
+    padding: 10px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
 .graph-canvas {
-    flex: 1;
+    min-height: calc(100vh - 130px);
+    min-height: calc(100dvh - 130px);
     position: relative;
     overflow: hidden;
+    border-radius: 28px;
+    border: 1px solid rgba(118, 199, 255, 0.1);
+    background:
+        radial-gradient(circle at 20% 18%, rgba(92, 174, 255, 0.12), transparent 24%),
+        radial-gradient(circle at 82% 16%, rgba(79, 153, 255, 0.12), transparent 20%),
+        rgba(9, 14, 22, 0.82);
+    backdrop-filter: blur(18px);
+}
+
+.graph-overlay {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 360px;
+}
+
+.graph-overlay-title {
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(162, 218, 255, 0.88);
+}
+
+.graph-overlay-subtitle {
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(221, 239, 255, 0.56);
 }
 
 .graph-loading,
@@ -39,18 +63,20 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #555;
+    color: rgba(255,255,255,0.46);
     font-size: 14px;
     text-align: center;
-    max-width: 200px;
+    max-width: 220px;
     line-height: 1.6;
 }
 
 .graph-legend {
     display: flex;
-    gap: 16px;
-    padding: 10px 20px;
-    border-top: 0.5px solid #1e1e1e;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    background: rgba(18, 12, 10, 0.72);
     flex-wrap: wrap;
 }
 
@@ -59,7 +85,7 @@
     align-items: center;
     gap: 6px;
     font-size: 11px;
-    color: #555;
+    color: rgba(255,255,255,0.46);
 }
 
 .legend-dot {
@@ -68,27 +94,16 @@
     border-radius: 50%;
 }
 
-.bottom-nav {
-    background: #0F0F0F;
-    border-top: 0.5px solid #1e1e1e;
-    display: flex;
-    padding: 8px 0 12px;
-}
+@media (max-width: 720px) {
+    .graph-canvas {
+        min-height: calc(100vh - 150px);
+        min-height: calc(100dvh - 150px);
+    }
 
-.nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 0;
-    cursor: pointer;
+    .graph-overlay {
+        top: 14px;
+        left: 14px;
+        right: 14px;
+        max-width: none;
+    }
 }
-
-.nav-label {
-    font-size: 10px;
-    color: #444;
-    font-weight: 500;
-}
-
-.nav-label.active { color: #F97316; }

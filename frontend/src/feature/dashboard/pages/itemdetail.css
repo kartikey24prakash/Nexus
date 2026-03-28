@@ -82,9 +82,9 @@
     font-size: 11px;
     padding: 3px 10px;
     border-radius: 6px;
-    background: #F9731615;
-    color: #F97316;
-    border: 0.5px solid #F9731630;
+    background: rgba(95,181,255,0.08);
+    color: #63b4ff;
+    border: 0.5px solid rgba(95,181,255,0.18);
 }
 
 .item-detail-meta {
@@ -95,7 +95,7 @@
 
 .item-url {
     font-size: 13px;
-    color: #F97316;
+    color: #63b4ff;
     text-decoration: none;
     transition: opacity 0.15s;
 }
@@ -151,7 +151,7 @@
     outline: none;
 }
 
-.collection-select:focus { border-color: #F97316; }
+.collection-select:focus { border-color: #63b4ff; }
 
 .collection-save-btn,
 .collection-remove-btn {
@@ -164,8 +164,8 @@
 }
 
 .collection-save-btn {
-    background: #F97316;
-    color: #0F0F0F;
+    background: linear-gradient(135deg, #4fa6ff, #8fd7ff);
+    color: #031421;
 }
 
 .collection-save-btn:disabled {
@@ -205,7 +205,7 @@
 /* Highlight prompt */
 .highlight-prompt {
     background: #1A1A1A;
-    border: 0.5px solid #F9731640;
+    border: 0.5px solid rgba(95,181,255,0.18);
     border-radius: 12px;
     padding: 14px 16px;
     display: flex;
@@ -215,7 +215,7 @@
 
 .highlight-selected {
     font-size: 13px;
-    color: #F97316;
+    color: #63b4ff;
     font-style: italic;
     line-height: 1.5;
 }
@@ -230,12 +230,12 @@
     outline: none;
 }
 
-.highlight-note-input:focus { border-color: #F97316; }
+.highlight-note-input:focus { border-color: #63b4ff; }
 .highlight-note-input::placeholder { color: #555; }
 
 .highlight-save-btn {
-    background: #F97316;
-    color: #0F0F0F;
+    background: linear-gradient(135deg, #4fa6ff, #8fd7ff);
+    color: #031421;
     border: none;
     border-radius: 8px;
     padding: 8px 14px;
@@ -262,7 +262,7 @@
 
 .highlight-card {
     background: #1A1A1A;
-    border-left: 2px solid #F97316;
+    border-left: 2px solid #63b4ff;
     border-radius: 0 8px 8px 0;
     padding: 12px 14px;
     position: relative;

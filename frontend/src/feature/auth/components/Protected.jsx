@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router'
+import LoadingScreen from '../../../app/components/LoadingScreen'
 
 
 const Protected = ({ children }) => {
@@ -8,7 +9,7 @@ const Protected = ({ children }) => {
     const loading = useSelector(state => state.auth.loading)
 
     if (loading) {
-        return <div>Loading...</div>
+        return <LoadingScreen />
     }
 
     if (!user) {

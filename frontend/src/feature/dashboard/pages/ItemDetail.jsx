@@ -189,7 +189,7 @@ export default function ItemDetail() {
                         <div className="item-collection-current">
                             <span
                                 className="item-collection-dot"
-                                style={{ background: item.collection.color || '#F97316' }}
+                                style={{ background: item.collection.color || '#4FA6FF' }}
                             />
                             <span className="item-collection-name">
                                 Saved in {item.collection.name}

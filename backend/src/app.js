@@ -12,6 +12,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/Auth.routes.js"
 import itemsRoutes from "./routes/items.routes.js";
 import searchRoutes from "./routes/search.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
 import graphRoutes from "./routes/graph.routes.js";
 import collectionsRoutes from "./routes/collections.routes.js";
 import resurfaceRoutes from "./routes/resurface.routes.js";
@@ -48,6 +49,7 @@ app.use("/api/auth", authRoutes);
 // ─── Protected routes (all require JWT) ──────────────────────────────────────
 app.use("/api/items", authMiddleware, itemsRoutes);
 app.use("/api/search", authMiddleware, searchRoutes);
+app.use("/api/chat", authMiddleware, chatRoutes);
 app.use("/api/graph", authMiddleware, graphRoutes);
 app.use("/api/collections", authMiddleware, collectionsRoutes);
 app.use("/api/resurface", authMiddleware, resurfaceRoutes);
