@@ -44,7 +44,7 @@ function buildContextBlocks(matches) {
     .slice(0, MAX_CONTEXT_BLOCKS);
 }
 
-async function findItemLevelFallback({ question, userId, type, collectionId }) {
+async function findItemLevelFallback({ question, userId, type, collectionId, itemId }) {
   const queryEmbedding = await generateEmbedding(question);
 
   if (!queryEmbedding.length) return [];
@@ -57,6 +57,7 @@ async function findItemLevelFallback({ question, userId, type, collectionId }) {
 
   if (type) filter.type = type;
   if (collectionId) filter.collection = collectionId;
+  if (itemId) filter._id = itemId;
 
   const items = await Item.find(filter)
     .select("title type url tags summary content embedding")
@@ -79,12 +80,13 @@ async function findItemLevelFallback({ question, userId, type, collectionId }) {
     .slice(0, MAX_CONTEXT_BLOCKS);
 }
 
-export async function answerQuestionWithRag({ question, userId, type, collectionId }) {
+export async function answerQuestionWithRag({ question, userId, type, collectionId, itemId }) {
   const matches = await searchItemChunks({
     query: question,
     userId,
     type,
     collectionId,
+    itemId,
     topK: MAX_MATCHES_TO_CONSIDER,
   });
 
@@ -94,7 +96,7 @@ export async function answerQuestionWithRag({ question, userId, type, collection
 
   const contextBlocks = strongMatches.length
     ? buildContextBlocks(strongMatches)
-    : await findItemLevelFallback({ question, userId, type, collectionId });
+    : await findItemLevelFallback({ question, userId, type, collectionId, itemId });
 
   if (!contextBlocks.length) {
     const answer = await generateGeneralAnswer(question);

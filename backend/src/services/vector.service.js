@@ -63,6 +63,7 @@ export async function searchItemChunks({
   userId,
   type,
   collectionId,
+  itemId,
   topK = 10,
 }) {
   const index = getPineconeIndex();
@@ -76,6 +77,7 @@ export async function searchItemChunks({
 
   if (type) filter.type = { $eq: type };
   if (collectionId) filter.collectionId = { $eq: String(collectionId) };
+  if (itemId) filter.itemId = { $eq: String(itemId) };
 
   const result = await index.query({
     vector: queryVector,

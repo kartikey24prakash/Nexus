@@ -39,9 +39,12 @@ export async function deleteHighlight(id, highlightId) {
     return response.data
 }
 
-export async function saveFile(file) {
+export async function saveFile(file, { collectionId } = {}) {
     const formData = new FormData()
     formData.append('file', file)
+    if (collectionId) {
+        formData.append('collectionId', collectionId)
+    }
     const response = await api.post('/api/items', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     })

@@ -20,10 +20,10 @@ export function useItems() {
         }
     }
 
-    async function handleSaveItem(url) {
+    async function handleSaveItem(url, collectionId) {
         try {
             dispatch(setLoading(true));
-            const data = await saveItem({ url });
+            const data = await saveItem({ url, collectionId });
             dispatch(addItem(data.item));
             toast.success("Saved to Nexus!");
         } catch (err) {
@@ -44,10 +44,10 @@ export function useItems() {
     }
 
 
-    async function handleSaveFile(file) {
+    async function handleSaveFile(file, collectionId) {
         try {
             dispatch(setLoading(true))
-            const data = await saveFile(file)
+            const data = await saveFile(file, { collectionId })
             dispatch(addItem(data.item))
             toast.success('File saved to Nexus!')
         } catch (err) {

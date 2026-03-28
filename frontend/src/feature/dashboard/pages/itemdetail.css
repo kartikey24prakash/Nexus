@@ -72,6 +72,29 @@
     line-height: 1.4;
 }
 
+.item-video-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-video-frame-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #0d1016;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+}
+
+.item-video-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
 .item-detail-tags {
     display: flex;
     gap: 8px;
@@ -116,6 +139,138 @@
 }
 
 .item-detail-content { display: flex; flex-direction: column; }
+
+.item-ask-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item-ask-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(164, 218, 255, 0.68);
+}
+
+.item-ask-title {
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: #f4fbff;
+}
+
+.item-ask-form {
+    position: relative;
+}
+
+.item-ask-glow {
+    position: absolute;
+    inset: -8px;
+    border-radius: 30px;
+    background:
+        radial-gradient(circle at 10% 50%, rgba(143, 97, 255, 0.34), transparent 28%),
+        radial-gradient(circle at 92% 58%, rgba(255, 174, 95, 0.24), transparent 22%),
+        radial-gradient(circle at 50% 0%, rgba(105, 184, 255, 0.14), transparent 38%);
+    filter: blur(18px);
+    opacity: 0.72;
+    pointer-events: none;
+}
+
+.item-ask-shell {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 15px 15px 14px;
+    border-radius: 26px;
+    background: linear-gradient(180deg, rgba(16, 20, 34, 0.88), rgba(12, 16, 29, 0.84));
+    border: 1px solid rgba(180, 211, 255, 0.14);
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+}
+
+.item-ask-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.item-ask-input {
+    min-height: 60px;
+    resize: none;
+    background: transparent;
+    border: none;
+    padding: 2px 4px;
+    color: #f4fbff;
+    font-size: 16px;
+    line-height: 1.4;
+    outline: none;
+    font-family: inherit;
+}
+
+.item-ask-input:focus {
+    background: transparent;
+}
+
+.item-ask-input::placeholder {
+    color: rgba(223, 236, 255, 0.38);
+}
+
+.item-ask-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 82px;
+    padding: 9px 13px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(182, 213, 255, 0.14);
+    color: rgba(233, 243, 255, 0.74);
+    font-size: 12px;
+}
+
+.item-ask-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(129, 85, 255, 0.88), rgba(255, 176, 92, 0.92));
+    color: #f9fbff;
+    box-shadow: 0 10px 26px rgba(131, 95, 255, 0.24);
+}
+
+.item-ask-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.item-ask-error {
+    font-size: 12px;
+    color: #ffc6c6;
+    background: rgba(46, 16, 24, 0.68);
+    border: 1px solid rgba(255, 160, 160, 0.14);
+    border-radius: 14px;
+    padding: 12px 14px;
+}
+
+.item-ask-answer {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #f2f8ff;
+    background: linear-gradient(180deg, rgba(10, 19, 31, 0.78), rgba(9, 17, 28, 0.72));
+    border: 1px solid rgba(173, 213, 255, 0.1);
+    border-radius: 20px;
+    padding: 16px 18px;
+    white-space: pre-wrap;
+    backdrop-filter: blur(18px);
+}
 
 .item-content-text {
     font-size: 14px;
@@ -340,7 +495,17 @@
     }
 
     .collection-save-btn,
-    .collection-remove-btn {
+    .collection-remove-btn,
+    .item-ask-btn {
+        width: 100%;
+    }
+
+    .item-ask-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .item-ask-chip {
         width: 100%;
     }
 }

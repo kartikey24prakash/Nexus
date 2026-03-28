@@ -1,17 +1,60 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
 import AppShell from '../../../app/components/AppShell'
 import { askQuestion } from '../../search/services/search.api'
+import { useCollections } from '../../collections/hook/useCollections'
 import './ask.css'
 
 export default function Ask() {
     const navigate = useNavigate()
+    const [searchParams, setSearchParams] = useSearchParams()
     const [question, setQuestion] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [result, setResult] = useState(null)
+    const [selectedCollectionId, setSelectedCollectionId] = useState('')
+    const { collections, handleGetCollections } = useCollections()
     const topSource = result?.sources?.[0] || null
     const otherSources = result?.sources?.slice(1) || []
+    const collectionParam = searchParams.get('collection') || ''
+
+    useEffect(() => {
+        handleGetCollections()
+    }, [])
+
+    useEffect(() => {
+        setSelectedCollectionId(collectionParam)
+    }, [collectionParam])
+
+    const selectedCollection = useMemo(
+        () => collections.find((collection) => collection._id === selectedCollectionId) || null,
+        [collections, selectedCollectionId]
+    )
+
+    useEffect(() => {
+        if (!collectionParam || collections.length === 0) return
+
+        const exists = collections.some((collection) => collection._id === collectionParam)
+
+        if (!exists) {
+            setSelectedCollectionId('')
+            setSearchParams({})
+            setError('That collection is no longer available')
+        }
+    }, [collectionParam, collections, setSearchParams])
+
+    const updateCollectionScope = (nextCollectionId) => {
+        setSelectedCollectionId(nextCollectionId)
+        setResult(null)
+        setError('')
+
+        if (nextCollectionId) {
+            setSearchParams({ collection: nextCollectionId })
+            return
+        }
+
+        setSearchParams({})
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -23,7 +66,10 @@ export default function Ask() {
         setError('')
 
         try {
-            const response = await askQuestion({ question: trimmedQuestion })
+            const response = await askQuestion({
+                question: trimmedQuestion,
+                collection: selectedCollectionId || undefined,
+            })
             setResult(response)
         } catch (err) {
             setError(err.response?.data?.message || 'Could not get an answer right now')
@@ -39,6 +85,32 @@ export default function Ask() {
                 <div className="ask-hero">
                     <div className="ask-hero-kicker">Ask</div>
                     <div className="ask-hero-title">Your personal AI</div>
+                </div>
+
+                <div className="ask-scope-row">
+                    <select
+                        className="ask-scope-select"
+                        value={selectedCollectionId}
+                        onChange={(e) => updateCollectionScope(e.target.value)}
+                    >
+                        <option value="">All saves</option>
+                        {collections.map((collection) => (
+                            <option key={collection._id} value={collection._id}>
+                                {collection.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    {selectedCollection && (
+                        <button
+                            className="ask-scope-chip"
+                            type="button"
+                            onClick={() => updateCollectionScope('')}
+                        >
+                            Asking in {selectedCollection.name}
+                            <span className="ask-scope-chip-close">×</span>
+                        </button>
+                    )}
                 </div>
 
                 <form className="ask-form" onSubmit={handleSubmit}>

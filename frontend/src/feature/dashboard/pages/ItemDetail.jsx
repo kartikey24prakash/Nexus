@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { getItemById, addHighlight, deleteHighlight } from '../services/item.api'
 import { useCollections } from '../../collections/hook/useCollections'
+import { askQuestion } from '../../search/services/search.api'
 import './itemdetail.css'
 
 const TYPE_COLORS = {
@@ -10,6 +11,39 @@ const TYPE_COLORS = {
     pdf: { bg: '#3f2a00', color: '#F59E0B' },
     tweet: { bg: '#0a2540', color: '#1D9BF0' },
     image: { bg: '#2a1a3f', color: '#A78BFA' },
+}
+
+function getYoutubeEmbedUrl(url) {
+    if (!url) return ''
+
+    try {
+        const parsed = new URL(url)
+
+        if (parsed.hostname.includes('youtu.be')) {
+            const id = parsed.pathname.split('/').filter(Boolean)[0]
+            return id ? `https://www.youtube.com/embed/${id}` : ''
+        }
+
+        if (parsed.hostname.includes('youtube.com')) {
+            const watchId = parsed.searchParams.get('v')
+            if (watchId) return `https://www.youtube.com/embed/${watchId}`
+
+            const pathParts = parsed.pathname.split('/').filter(Boolean)
+            const shortsIndex = pathParts.indexOf('shorts')
+            if (shortsIndex >= 0 && pathParts[shortsIndex + 1]) {
+                return `https://www.youtube.com/embed/${pathParts[shortsIndex + 1]}`
+            }
+
+            const embedIndex = pathParts.indexOf('embed')
+            if (embedIndex >= 0 && pathParts[embedIndex + 1]) {
+                return `https://www.youtube.com/embed/${pathParts[embedIndex + 1]}`
+            }
+        }
+    } catch {
+        return ''
+    }
+
+    return ''
 }
 
 export default function ItemDetail() {
@@ -21,6 +55,10 @@ export default function ItemDetail() {
     const [highlightNote, setHighlightNote] = useState('')
     const [selectedText, setSelectedText] = useState('')
     const [selectedCollectionId, setSelectedCollectionId] = useState('')
+    const [itemQuestion, setItemQuestion] = useState('')
+    const [itemAskLoading, setItemAskLoading] = useState(false)
+    const [itemAskError, setItemAskError] = useState('')
+    const [itemAskAnswer, setItemAskAnswer] = useState('')
 
     const {
         collections,
@@ -120,10 +158,32 @@ export default function ItemDetail() {
         }
     }
 
+    async function handleAskItem(e) {
+        e.preventDefault()
+        const trimmedQuestion = itemQuestion.trim()
+        if (!trimmedQuestion) return
+
+        try {
+            setItemAskLoading(true)
+            setItemAskError('')
+            const data = await askQuestion({
+                question: trimmedQuestion,
+                itemId: id,
+            })
+            setItemAskAnswer(data.answer || '')
+        } catch (err) {
+            setItemAskError(err.response?.data?.message || 'Could not answer right now')
+            setItemAskAnswer('')
+        } finally {
+            setItemAskLoading(false)
+        }
+    }
+
     if (loading) return <div className="item-detail-loading">Loading...</div>
     if (!item) return <div className="item-detail-loading">Item not found</div>
 
     const typeStyle = TYPE_COLORS[item.type] || TYPE_COLORS.article
+    const youtubeEmbedUrl = item.type === 'youtube' ? getYoutubeEmbedUrl(item.url) : ''
 
     return (
         <div className="item-detail-page">
@@ -158,6 +218,37 @@ export default function ItemDetail() {
                             day: 'numeric',
                         })}
                     </span>
+                </div>
+
+                <div className="item-ask-panel">
+                  
+
+                    <form className="item-ask-form" onSubmit={handleAskItem}>
+                        <div className="item-ask-glow" aria-hidden="true" />
+                        <div className="item-ask-shell">
+                            <textarea
+                                className="item-ask-input"
+                                rows="2"
+                                placeholder="Ask this save..."
+                                value={itemQuestion}
+                                onChange={(e) => setItemQuestion(e.target.value)}
+                            />
+                            <div className="item-ask-actions">
+                                <span className="item-ask-chip">This item</span>
+                                <button className="item-ask-btn" type="submit" disabled={itemAskLoading}>
+                                    {itemAskLoading ? 'Thinking' : 'Ask'}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {itemAskError && (
+                        <div className="item-ask-error">{itemAskError}</div>
+                    )}
+
+                    {itemAskAnswer && (
+                        <div className="item-ask-answer">{itemAskAnswer}</div>
+                    )}
                 </div>
 
                 <div className="item-collection-panel">
@@ -215,6 +306,22 @@ export default function ItemDetail() {
                             {item.content.slice(0, 1000)}
                             {item.content.length > 1000 ? '...' : ''}
                         </p>
+                    </div>
+                )}
+
+                {youtubeEmbedUrl && (
+                    <div className="item-video-panel">
+                        <div className="section-label">PREVIEW</div>
+                        <div className="item-video-frame-wrap">
+                            <iframe
+                                className="item-video-frame"
+                                src={youtubeEmbedUrl}
+                                title={item.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerPolicy="strict-origin-when-cross-origin"
+                                allowFullScreen
+                            />
+                        </div>
                     </div>
                 )}
 
