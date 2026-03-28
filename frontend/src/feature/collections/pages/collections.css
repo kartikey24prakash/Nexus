@@ -4,6 +4,98 @@
     gap: 16px;
 }
 
+.collection-insight-card {
+    padding: 18px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(12, 19, 29, 0.82), rgba(9, 16, 25, 0.76));
+    backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.collection-insight-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.collection-insight-kicker {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(160, 217, 255, 0.82);
+    margin-bottom: 8px;
+}
+
+.collection-insight-summary {
+    color: #eef8ff;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 720px;
+}
+
+.collection-insight-density {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(95,181,255,0.08);
+    border: 1px solid rgba(95,181,255,0.14);
+    color: #9fdcff;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.collection-insight-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 0.8fr 1fr;
+    gap: 12px;
+}
+
+.collection-insight-block {
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.collection-insight-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(214, 233, 248, 0.52);
+}
+
+.collection-insight-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.collection-insight-tags span,
+.collection-insight-empty {
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(95,181,255,0.08);
+    border: 1px solid rgba(95,181,255,0.14);
+    color: #9fdcff;
+    font-size: 11px;
+}
+
+.collection-insight-value {
+    color: #eef8ff;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.collection-insight-value-strong {
+    color: rgba(244, 249, 255, 0.96);
+}
+
 .collection-controls {
     display: flex;
     flex-direction: column;
@@ -240,6 +332,15 @@
 }
 
 @media (max-width: 640px) {
+    .collection-insight-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .collection-insight-grid {
+        grid-template-columns: 1fr;
+    }
+
     .collection-existing-bar {
         flex-wrap: wrap;
     }

@@ -13,6 +13,80 @@ const TYPE_COLORS = {
     image: { bg: '#2a1a3f', color: '#A78BFA' },
 }
 
+function formatType(type) {
+    return type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Mixed'
+}
+
+function buildCollectionInsights(items = []) {
+    if (!items.length) {
+        return {
+            topThemes: [],
+            dominantType: null,
+            mostConnectedItem: null,
+            densityLabel: 'No connections yet',
+            summaryLine: 'This collection is still waiting for its first meaningful cluster.',
+        }
+    }
+
+    const tagCount = {}
+    const typeCount = {}
+    const connectionScores = new Map()
+
+    items.forEach((item) => {
+        typeCount[item.type] = (typeCount[item.type] || 0) + 1
+        ;(item.tags || []).forEach((tag) => {
+            tagCount[tag] = (tagCount[tag] || 0) + 1
+        })
+        connectionScores.set(item._id, 0)
+    })
+
+    for (let i = 0; i < items.length; i++) {
+        for (let j = i + 1; j < items.length; j++) {
+            const itemA = items[i]
+            const itemB = items[j]
+            const sharedTags = (itemA.tags || []).filter((tag) => (itemB.tags || []).includes(tag))
+
+            if (sharedTags.length) {
+                connectionScores.set(itemA._id, (connectionScores.get(itemA._id) || 0) + sharedTags.length)
+                connectionScores.set(itemB._id, (connectionScores.get(itemB._id) || 0) + sharedTags.length)
+            }
+        }
+    }
+
+    const topThemes = Object.entries(tagCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([tag]) => tag)
+
+    const dominantType = Object.entries(typeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || null
+    const mostConnectedEntry = [...connectionScores.entries()].sort((a, b) => b[1] - a[1])[0]
+    const mostConnectedItem = mostConnectedEntry
+        ? items.find((item) => item._id === mostConnectedEntry[0]) || null
+        : null
+
+    const totalPossibleConnections = (items.length * (items.length - 1)) / 2
+    const actualConnections = [...connectionScores.values()].reduce((sum, value) => sum + value, 0) / 2
+    const connectionRatio = totalPossibleConnections ? actualConnections / totalPossibleConnections : 0
+
+    let densityLabel = 'Lightly connected'
+    if (connectionRatio > 1.2) densityLabel = 'Tightly connected'
+    else if (connectionRatio > 0.45) densityLabel = 'Moderately connected'
+
+    const summaryParts = []
+    if (topThemes.length) summaryParts.push(topThemes.join(', '))
+    if (dominantType) summaryParts.push(`${formatType(dominantType).toLowerCase()} saves`)
+
+    return {
+        topThemes,
+        dominantType,
+        mostConnectedItem,
+        densityLabel,
+        summaryLine: summaryParts.length
+            ? `This collection clusters around ${summaryParts.join(' and ')}.`
+            : 'This collection is starting to form its own pattern.',
+    }
+}
+
 export default function CollectionDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
@@ -52,6 +126,7 @@ export default function CollectionDetail() {
     const { collection, items } = activeCollection
     const collectionItemIds = new Set((items || []).map((item) => item._id))
     const availableSavedItems = savedItems.filter((item) => !collectionItemIds.has(item._id))
+    const insights = buildCollectionInsights(items || [])
 
     return (
         <AppShell
@@ -69,6 +144,41 @@ export default function CollectionDetail() {
             }
         >
             <div className="collections-page">
+                <div className="collection-insight-card">
+                    <div className="collection-insight-top">
+                        <div>
+                            <div className="collection-insight-kicker">Collection insight</div>
+                            <div className="collection-insight-summary">{insights.summaryLine}</div>
+                        </div>
+                        <div className="collection-insight-density">{insights.densityLabel}</div>
+                    </div>
+
+                    <div className="collection-insight-grid">
+                        <div className="collection-insight-block">
+                            <div className="collection-insight-label">Top themes</div>
+                            <div className="collection-insight-tags">
+                                {insights.topThemes.length
+                                    ? insights.topThemes.map((tag) => <span key={tag}>{tag}</span>)
+                                    : <span className="collection-insight-empty">No strong themes yet</span>}
+                            </div>
+                        </div>
+
+                        <div className="collection-insight-block">
+                            <div className="collection-insight-label">Dominant type</div>
+                            <div className="collection-insight-value">
+                                {insights.dominantType ? formatType(insights.dominantType) : 'Mixed'}
+                            </div>
+                        </div>
+
+                        <div className="collection-insight-block">
+                            <div className="collection-insight-label">Most connected item</div>
+                            <div className="collection-insight-value collection-insight-value-strong">
+                                {insights.mostConnectedItem?.title || 'Not enough links yet'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="collection-controls">
                     <div className="collection-existing-bar compact">
                         <select

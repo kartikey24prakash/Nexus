@@ -6,7 +6,8 @@ export const getGraph = async (req, res, next) => {
   try {
     // fetch all items for this user — only fields needed for graph
     const items = await Item.find({ user: req.user._id })
-      .select("_id title type tags thumbnail createdAt")
+      .select("_id title type tags thumbnail createdAt collection")
+      .populate("collection", "name color")
       .lean();
 
     if (!items.length) {
@@ -21,6 +22,13 @@ export const getGraph = async (req, res, next) => {
       tags: item.tags,
       thumbnail: item.thumbnail,
       createdAt: item.createdAt,
+      collection: item.collection
+        ? {
+            id: item.collection._id.toString(),
+            name: item.collection.name,
+            color: item.collection.color,
+          }
+        : null,
     }));
 
     // ── Build edges ────────────────────────────────────────────────────────────
