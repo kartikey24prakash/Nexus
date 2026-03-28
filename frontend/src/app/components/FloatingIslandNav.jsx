@@ -18,6 +18,17 @@ const NAV_ITEMS = [
         ),
     },
     {
+        label: 'Items',
+        path: '/items',
+        match: (pathname) => pathname.startsWith('/items'),
+        icon: (
+            <svg width="19" height="19" viewBox="0 0 20 20" fill="none">
+                <rect x="3" y="4" width="14" height="12" rx="2" strokeWidth="1.5" />
+                <path d="M6 8h8M6 11h8M6 14h5" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+        ),
+    },
+    {
         label: 'Search',
         path: '/search',
         match: (pathname) => pathname.startsWith('/search'),

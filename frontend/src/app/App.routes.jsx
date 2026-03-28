@@ -4,6 +4,7 @@ import Login from "../feature/auth/pages/Login"
 import Protected from "../feature/auth/components/Protected"
 import Register from '../feature/auth/pages/Register'
 import Dashboard from '../feature/dashboard/pages/Dashboard'
+import Items from '../feature/items/pages/Items'
 import Search from "../feature/search/pages/Search"
 import Ask from "../feature/rag/pages/Ask"
 import Collections from "../feature/collections/pages/Collections"
@@ -28,6 +29,12 @@ export const router = createBrowserRouter([
         path:"/",
         element: <Protected>
             <Dashboard></Dashboard>
+        </Protected>
+    },
+    {
+        path:"/items",
+        element:<Protected>
+            <Items></Items>
         </Protected>
     },
     {
