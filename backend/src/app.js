@@ -21,15 +21,15 @@ import resurfaceRoutes from "./routes/resurface.routes.js";
 dotenv.config();
 
 const app = express();
+const corsOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173,http://localhost:3000,chrome-extension://flhhajpghloejheffojcemcnimbdbfii")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",     // Vite React dev server
-      "http://localhost:3000",
-      "chrome-extension://flhhajpghloejheffojcemcnimbdbfii",      // Browser extension
-    ],
+    origin: corsOrigins,
     credentials: true,
   })
 );

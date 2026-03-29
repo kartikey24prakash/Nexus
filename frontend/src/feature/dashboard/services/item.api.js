@@ -1,9 +1,4 @@
-import axios from 'axios'
-
-const api = axios.create({
-    baseURL: "http://localhost:5000",
-    withCredentials: true,
-})
+import api from '../../../app/api'
 
 export async function getItems({ type, collection, page = 1, limit = 20 } = {}) {
     const params = { page, limit }

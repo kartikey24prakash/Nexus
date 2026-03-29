@@ -10,10 +10,12 @@ const generateToken = (id) => {
 };
 
 const setCookie = (res, token) => {
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("token", token, {
     httpOnly: true,
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    sameSite: "lax",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
   });
 };
 
@@ -91,6 +93,10 @@ export const getMe = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  res.clearCookie("token");
+  const isProduction = process.env.NODE_ENV === "production";
+  res.clearCookie("token", {
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+  });
   res.json({ success: true, message: "Logged out successfully" });
 };

@@ -1,9 +1,4 @@
-import axios from 'axios'
-
-const api = axios.create({
-    baseURL: "http://localhost:5000",
-    withCredentials: true,
-})
+import api from '../../../app/api'
 
 export async function semanticSearch({ query, type, collection }) {
     const response = await api.post('/api/search', { query, type, collection })
