@@ -144,6 +144,16 @@ export default function FloatingIslandNav() {
 
                     {menuOpen && (
                         <div className="floating-profile-menu">
+                            <button
+                                type="button"
+                                className="floating-menu-btn"
+                                onClick={() => {
+                                    setMenuOpen(false)
+                                    navigate('/extension')
+                                }}
+                            >
+                                Extension
+                            </button>
                             <button type="button" className="floating-menu-btn danger" onClick={handleProfileLogout}>
                                 Logout
                             </button>

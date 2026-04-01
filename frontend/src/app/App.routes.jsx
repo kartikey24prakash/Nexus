@@ -5,6 +5,7 @@ import Protected from "../feature/auth/components/Protected"
 import Register from '../feature/auth/pages/Register'
 import Dashboard from '../feature/dashboard/pages/Dashboard'
 import Items from '../feature/items/pages/Items'
+import ExtensionInstall from '../feature/extension/pages/ExtensionInstall'
 import Search from "../feature/search/pages/Search"
 import Ask from "../feature/rag/pages/Ask"
 import Collections from "../feature/collections/pages/Collections"
@@ -35,6 +36,12 @@ export const router = createBrowserRouter([
         path:"/items",
         element:<Protected>
             <Items></Items>
+        </Protected>
+    },
+    {
+        path:"/extension",
+        element:<Protected>
+            <ExtensionInstall></ExtensionInstall>
         </Protected>
     },
     {

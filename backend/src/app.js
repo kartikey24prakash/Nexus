@@ -29,7 +29,17 @@ const corsOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173,http://l
 // ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      const isAllowedOrigin =
+        corsOrigins.includes(origin) || origin.startsWith("chrome-extension://");
+
+      callback(isAllowedOrigin ? null : new Error("Not allowed by CORS"), isAllowedOrigin);
+    },
     credentials: true,
   })
 );
