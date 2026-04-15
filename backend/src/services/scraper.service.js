@@ -94,17 +94,69 @@ const fetchYoutubeTranscript = async (info) => {
   }
 };
 
+const scrapeYoutubeFallback = async (url) => {
+  try {
+    const { data } = await axios.get(url, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      timeout: 10000,
+    });
+
+    const $ = cheerio.load(data);
+
+    const title =
+      $("meta[property='og:title']").attr("content") ||
+      $("meta[name='title']").attr("content") ||
+      $("title").text() ||
+      "YouTube Video";
+
+    const description =
+      $("meta[property='og:description']").attr("content") ||
+      $("meta[name='description']").attr("content") ||
+      "";
+
+    const thumbnail =
+      $("meta[property='og:image']").attr("content") ||
+      $("link[itemprop='thumbnailUrl']").attr("href") ||
+      "";
+
+    return {
+      title,
+      content: description.slice(0, 15000),
+      thumbnail,
+    };
+  } catch (error) {
+    const { data } = await axios.get(
+      `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`,
+      {
+        headers: { "User-Agent": "Mozilla/5.0" },
+        timeout: 10000,
+      }
+    );
+
+    return {
+      title: data.title || "YouTube Video",
+      content: "",
+      thumbnail: data.thumbnail_url || "",
+    };
+  }
+};
+
 const scrapeYoutube = async (url) => {
-  const info = await ytdl.getBasicInfo(url);
-  const details = info.videoDetails;
-  const transcript = await fetchYoutubeTranscript(info);
+  try {
+    const info = await ytdl.getBasicInfo(url);
+    const details = info.videoDetails;
+    const transcript = await fetchYoutubeTranscript(info);
 
-  const title = details.title || "YouTube Video";
-  const description = details.description || "";
-  const content = [description, transcript].filter(Boolean).join("\n\n").slice(0, 15000);
-  const thumbnail = details.thumbnails?.[details.thumbnails.length - 1]?.url || "";
+    const title = details.title || "YouTube Video";
+    const description = details.description || "";
+    const content = [description, transcript].filter(Boolean).join("\n\n").slice(0, 15000);
+    const thumbnail = details.thumbnails?.[details.thumbnails.length - 1]?.url || "";
 
-  return { title, content, thumbnail };
+    return { title, content, thumbnail };
+  } catch (error) {
+    console.warn("[Scraper] YouTube basic info failed, using fallback:", error.message);
+    return scrapeYoutubeFallback(url);
+  }
 };
 
 const scrapeImage = async (url) => {
