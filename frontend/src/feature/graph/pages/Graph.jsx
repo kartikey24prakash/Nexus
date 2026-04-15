@@ -22,10 +22,13 @@ export default function Graph() {
     const svgRef = useRef(null)
     const linkSelectionRef = useRef(null)
     const nodeSelectionRef = useRef(null)
+    const hasLoadedGraphRef = useRef(false)
     const [selectedNodeId, setSelectedNodeId] = useState(null)
     const { nodes, edges, stats, loading, handleGetGraph } = useGraph()
 
     useEffect(() => {
+        if (hasLoadedGraphRef.current) return
+        hasLoadedGraphRef.current = true
         handleGetGraph()
     }, [])
 
