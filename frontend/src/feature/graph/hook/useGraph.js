@@ -6,7 +6,21 @@ export function useGraph() {
     const dispatch = useDispatch();
     const { nodes, edges, stats, loading, error } = useSelector(s => s.graph);
 
-    async function handleGetGraph() {
+    async function handleGetGraph(options = {}) {
+        const { force = false } = options;
+
+        if (loading) return;
+
+        const hasCachedGraph =
+            nodes.length > 0 ||
+            edges.length > 0 ||
+            (stats?.totalNodes || 0) > 0 ||
+            (stats?.totalEdges || 0) > 0;
+
+        if (!force && hasCachedGraph) {
+            return;
+        }
+
         try {
             dispatch(setLoading(true));
             const data = await getGraph();

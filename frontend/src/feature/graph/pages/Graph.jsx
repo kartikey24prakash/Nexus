@@ -22,15 +22,18 @@ export default function Graph() {
     const svgRef = useRef(null)
     const linkSelectionRef = useRef(null)
     const nodeSelectionRef = useRef(null)
-    const hasLoadedGraphRef = useRef(false)
     const [selectedNodeId, setSelectedNodeId] = useState(null)
     const { nodes, edges, stats, loading, handleGetGraph } = useGraph()
+    const hasGraphData =
+        nodes.length > 0 ||
+        edges.length > 0 ||
+        (stats?.totalNodes || 0) > 0 ||
+        (stats?.totalEdges || 0) > 0
 
     useEffect(() => {
-        if (hasLoadedGraphRef.current) return
-        hasLoadedGraphRef.current = true
+        if (hasGraphData) return
         handleGetGraph()
-    }, [])
+    }, [hasGraphData, handleGetGraph])
 
     useEffect(() => {
         if (!nodes.length || !svgRef.current) return undefined
@@ -388,7 +391,7 @@ export default function Graph() {
                         </aside>
                     )}
 
-                    {loading && <div className="graph-loading">Loading graph...</div>}
+                    {loading && !hasGraphData && <div className="graph-loading">Loading graph...</div>}
                     {!loading && nodes.length === 0 && (
                         <div className="graph-empty">
                             Save more items to see your knowledge graph grow.
