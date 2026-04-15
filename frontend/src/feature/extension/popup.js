@@ -1,5 +1,5 @@
-const API = "http://127.0.0.1:5000/api"
-const APP_URL = "http://localhost:5173"
+const API = "https://nexus-backend-v7ki.onrender.com/api"
+const APP_URL = "https://nexus-ebon-eight.vercel.app"
 
 const loginScreen = document.getElementById("login-screen")
 const saveScreen = document.getElementById("save-screen")

@@ -7,6 +7,10 @@
         "activeTab",
         "storage"
     ],
+    "host_permissions": [
+        "https://nexus-backend-v7ki.onrender.com/*",
+        "https://nexus-ebon-eight.vercel.app/*"
+    ],
     "action": {
         "default_popup": "popup.html",
         "default_title": "Save to Nexus"
