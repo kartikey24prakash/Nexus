@@ -94,7 +94,45 @@ const fetchYoutubeTranscript = async (info) => {
   }
 };
 
+const extractYoutubeVideoId = (url) => {
+  try {
+    const parsedUrl = new URL(url);
+
+    if (parsedUrl.hostname.includes("youtu.be")) {
+      return parsedUrl.pathname.split("/").filter(Boolean)[0] || "";
+    }
+
+    if (parsedUrl.pathname.startsWith("/shorts/")) {
+      return parsedUrl.pathname.split("/").filter(Boolean)[1] || "";
+    }
+
+    return parsedUrl.searchParams.get("v") || "";
+  } catch {
+    return "";
+  }
+};
+
+const getYoutubeOEmbed = async (url) => {
+  const { data } = await axios.get(
+    `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`,
+    {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      timeout: 10000,
+    }
+  );
+
+  return data;
+};
+
 const scrapeYoutubeFallback = async (url) => {
+  const videoId = extractYoutubeVideoId(url);
+  let pageTitle = "";
+  let pageDescription = "";
+  let pageThumbnail = "";
+  let oembedTitle = "";
+  let oembedAuthor = "";
+  let oembedThumbnail = "";
+
   try {
     const { data } = await axios.get(url, {
       headers: { "User-Agent": "Mozilla/5.0" },
@@ -103,42 +141,52 @@ const scrapeYoutubeFallback = async (url) => {
 
     const $ = cheerio.load(data);
 
-    const title =
+    pageTitle =
       $("meta[property='og:title']").attr("content") ||
       $("meta[name='title']").attr("content") ||
       $("title").text() ||
-      "YouTube Video";
+      "";
 
-    const description =
+    pageDescription =
       $("meta[property='og:description']").attr("content") ||
       $("meta[name='description']").attr("content") ||
       "";
 
-    const thumbnail =
+    pageThumbnail =
       $("meta[property='og:image']").attr("content") ||
       $("link[itemprop='thumbnailUrl']").attr("href") ||
       "";
-
-    return {
-      title,
-      content: description.slice(0, 15000),
-      thumbnail,
-    };
   } catch (error) {
-    const { data } = await axios.get(
-      `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`,
-      {
-        headers: { "User-Agent": "Mozilla/5.0" },
-        timeout: 10000,
-      }
-    );
-
-    return {
-      title: data.title || "YouTube Video",
-      content: "",
-      thumbnail: data.thumbnail_url || "",
-    };
+    console.warn("[Scraper] YouTube page fallback failed:", error.message);
   }
+
+  try {
+    const oembed = await getYoutubeOEmbed(url);
+    oembedTitle = oembed.title || "";
+    oembedAuthor = oembed.author_name || "";
+    oembedThumbnail = oembed.thumbnail_url || "";
+  } catch (error) {
+    console.warn("[Scraper] YouTube oEmbed fallback failed:", error.message);
+  }
+
+  const cleanedPageTitle = pageTitle.replace(/\s*-\s*YouTube\s*$/i, "").trim();
+  const title = oembedTitle || cleanedPageTitle || "YouTube Video";
+  const thumbnail =
+    pageThumbnail ||
+    oembedThumbnail ||
+    (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : "");
+
+  const contentParts = [
+    pageDescription,
+    oembedAuthor ? `Channel: ${oembedAuthor}` : "",
+    videoId ? `Video ID: ${videoId}` : "",
+  ].filter(Boolean);
+
+  return {
+    title,
+    content: contentParts.join("\n").slice(0, 15000),
+    thumbnail,
+  };
 };
 
 const scrapeYoutube = async (url) => {
