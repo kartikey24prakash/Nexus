@@ -117,6 +117,70 @@ export default function Graph() {
         }
     }, [selectedConnections, selectedNode])
 
+    const clusterSeeds = useMemo(() => {
+        if (!nodes.length) return []
+
+        const adjacency = new Map()
+        nodes.forEach((node) => {
+            adjacency.set(node.id, new Set())
+        })
+
+        edges.forEach((edge) => {
+            const sourceId = typeof edge.source === 'object' ? edge.source.id : edge.source
+            const targetId = typeof edge.target === 'object' ? edge.target.id : edge.target
+
+            if (!adjacency.has(sourceId)) adjacency.set(sourceId, new Set())
+            if (!adjacency.has(targetId)) adjacency.set(targetId, new Set())
+
+            adjacency.get(sourceId).add(targetId)
+            adjacency.get(targetId).add(sourceId)
+        })
+
+        const visited = new Set()
+        const clusters = []
+
+        nodes.forEach((node) => {
+            if (visited.has(node.id)) return
+
+            const queue = [node.id]
+            const component = []
+            visited.add(node.id)
+
+            while (queue.length) {
+                const currentId = queue.shift()
+                const currentNode = nodes.find((entry) => entry.id === currentId)
+                if (currentNode) component.push(currentNode)
+
+                ;(adjacency.get(currentId) || []).forEach((neighborId) => {
+                    if (visited.has(neighborId)) return
+                    visited.add(neighborId)
+                    queue.push(neighborId)
+                })
+            }
+
+            if (component.length >= 3) {
+                const tagCounts = {}
+                component.forEach((item) => {
+                    ;(item.tags || []).forEach((tag) => {
+                        tagCounts[tag] = (tagCounts[tag] || 0) + 1
+                    })
+                })
+
+                const label =
+                    Object.entries(tagCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+                    formatType(component[0]?.type || 'Item')
+
+                clusters.push({
+                    id: `cluster-${clusters.length}`,
+                    label,
+                    nodeIds: component.map((item) => item.id),
+                })
+            }
+        })
+
+        return clusters
+    }, [nodes, edges])
+
     function drawGraph() {
         const container = svgRef.current.parentElement
         const width = container.clientWidth
@@ -138,6 +202,7 @@ export default function Graph() {
 
         const graphNodes = nodes.map((n) => ({ ...n }))
         const graphEdges = edges.map((e) => ({ ...e }))
+        const graphClusters = clusterSeeds.map((cluster) => ({ ...cluster }))
 
         const simulation = d3.forceSimulation(graphNodes)
             .force('link', d3.forceLink(graphEdges).id((d) => d.id).distance(112))
@@ -180,6 +245,21 @@ export default function Graph() {
                 e.stopPropagation()
                 setSelectedNodeId(d.id)
             })
+
+        const clusterLabel = g.append('g')
+            .selectAll('g')
+            .data(graphClusters)
+            .enter()
+            .append('g')
+            .attr('class', 'graph-cluster-label')
+
+        clusterLabel.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'rgba(205, 233, 255, 0.46)')
+            .attr('font-size', '11px')
+            .attr('font-family', 'Syne, sans-serif')
+            .attr('letter-spacing', '0.08em')
+            .text((d) => d.label)
 
         const defs = svg.append('defs')
 
@@ -243,6 +323,16 @@ export default function Graph() {
                 .attr('y2', (d) => d.target.y)
 
             node.attr('transform', (d) => `translate(${d.x},${d.y})`)
+
+            clusterLabel.attr('transform', (cluster) => {
+                const clusterNodes = graphNodes.filter((nodeEntry) => cluster.nodeIds.includes(nodeEntry.id))
+                if (!clusterNodes.length) return 'translate(-9999,-9999)'
+
+                const avgX = clusterNodes.reduce((sum, entry) => sum + (entry.x || 0), 0) / clusterNodes.length
+                const minY = Math.min(...clusterNodes.map((entry) => entry.y || 0))
+
+                return `translate(${avgX},${minY - 38})`
+            })
         })
 
         return () => {
