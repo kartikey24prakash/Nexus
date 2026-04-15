@@ -134,10 +134,10 @@ export default function Graph() {
         const graphEdges = edges.map((e) => ({ ...e }))
 
         const simulation = d3.forceSimulation(graphNodes)
-            .force('link', d3.forceLink(graphEdges).id((d) => d.id).distance(126))
-            .force('charge', d3.forceManyBody().strength(-320))
+            .force('link', d3.forceLink(graphEdges).id((d) => d.id).distance(112))
+            .force('charge', d3.forceManyBody().strength(-235))
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('collision', d3.forceCollide(42))
+            .force('collision', d3.forceCollide(36))
 
         const link = g.append('g')
             .selectAll('line')

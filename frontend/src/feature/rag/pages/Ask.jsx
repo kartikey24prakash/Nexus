@@ -71,6 +71,7 @@ export default function Ask() {
                 collection: selectedCollectionId || undefined,
             })
             setResult(response)
+            setQuestion('')
         } catch (err) {
             setError(err.response?.data?.message || 'Could not get an answer right now')
             setResult(null)
